@@ -1,0 +1,59 @@
+{
+  "name": "@hayashiii/pdfmint",
+  "version": "0.1.0",
+  "description": "AI-friendly CLI for converting HTML/Markdown to clean Japanese PDFs. Designed for AI agents to generate HTML and pipeline into PDF.",
+  "type": "module",
+  "bin": {
+    "pdfmint": "dist/cli.js"
+  },
+  "files": [
+    "dist/",
+    "skills/",
+    "README.md",
+    "README.en.md",
+    "CHANGELOG.md",
+    "AGENTS.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\"",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build"
+  },
+  "keywords": [
+    "pdf",
+    "html-to-pdf",
+    "markdown-to-pdf",
+    "cli",
+    "puppeteer",
+    "ai-agent",
+    "claude-code",
+    "japanese"
+  ],
+  "author": "Hayashi <hay@shigoto.dev>",
+  "license": "MIT",
+  "homepage": "https://github.com/hayashiii-ghub/pdfmint#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hayashiii-ghub/pdfmint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hayashiii-ghub/pdfmint/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "glob": "^11.0.0",
+    "marked": "^16.0.0",
+    "puppeteer": "^24.43.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  }
+}
