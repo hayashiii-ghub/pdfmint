@@ -17,7 +17,8 @@ export function formatSuccessSingle(result: ConvertResult, format: OutputFormat)
     })
   }
   // text
-  return `✓ ${result.output} (${result.size_bytes} bytes, ${result.duration_ms}ms)`
+  const sizeKB = (result.size_bytes / 1024).toFixed(1)
+  return `✓ ${result.output} (${sizeKB}KB, ${result.duration_ms}ms)`
 }
 
 export function formatSuccessBatch(

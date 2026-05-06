@@ -32,7 +32,8 @@ test("formatSuccessSingle: text 形式で人間可読な結果を返す", () => 
   }
   const text = formatSuccessSingle(result, "text")
   expect(text).toContain("/abs/out.pdf")
-  expect(text).toContain("12345")
+  expect(text).toContain("12.1KB")
+  expect(text).toContain("1000ms")
 })
 
 test("formatSuccessBatch: JSON 形式で集計結果を返す", () => {
