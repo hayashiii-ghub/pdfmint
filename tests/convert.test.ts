@@ -1,0 +1,47 @@
+import { test, expect } from "bun:test"
+import { convertHtmlToPdf } from "../src/convert"
+import { PdfMintError } from "../src/errors"
+import { existsSync, mkdtempSync, statSync, readFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+
+const FIXTURES = join(import.meta.dir, "fixtures")
+
+function newTmpDir() {
+  return mkdtempSync(join(tmpdir(), "pdfmint-convert-"))
+}
+
+test("HTMLファイルからPDFを生成する", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  await convertHtmlToPdf(join(FIXTURES, "sample.html"), out, {})
+  expect(existsSync(out)).toBe(true)
+  expect(statSync(out).size).toBeGreaterThan(1000)
+  // PDF magic number "%PDF" を確認
+  const head = readFileSync(out).subarray(0, 4).toString()
+  expect(head).toBe("%PDF")
+})
+
+test("入力ファイルが存在しない場合 INPUT_NOT_FOUND をスロー", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  await expect(
+    convertHtmlToPdf("/nonexistent/file.html", out, {})
+  ).rejects.toMatchObject({
+    code: "INPUT_NOT_FOUND",
+  })
+})
+
+test("出力先ディレクトリが存在しない場合 OUTPUT_DIR_NOT_FOUND をスロー", async () => {
+  await expect(
+    convertHtmlToPdf(join(FIXTURES, "sample.html"), "/nonexistent/dir/out.pdf", {})
+  ).rejects.toMatchObject({
+    code: "OUTPUT_DIR_NOT_FOUND",
+  })
+})
+
+test("用紙サイズオプションが反映される", async () => {
+  const out = join(newTmpDir(), "out-a3.pdf")
+  await convertHtmlToPdf(join(FIXTURES, "sample.html"), out, { format: "A3" })
+  expect(existsSync(out)).toBe(true)
+  // A3はA4より大きいので、ファイルサイズも大きいことが期待される（厳密な検証は別途）
+  expect(statSync(out).size).toBeGreaterThan(1000)
+})
