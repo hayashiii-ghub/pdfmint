@@ -45,3 +45,24 @@ test("用紙サイズオプションが反映される", async () => {
   // A3はA4より大きいので、ファイルサイズも大きいことが期待される（厳密な検証は別途）
   expect(statSync(out).size).toBeGreaterThan(1000)
 })
+
+test("Markdown ファイルから PDF を生成する", async () => {
+  const out = join(newTmpDir(), "out-md.pdf")
+  await convertHtmlToPdf(join(FIXTURES, "sample.md"), out, {})
+  expect(existsSync(out)).toBe(true)
+  const head = readFileSync(out).subarray(0, 4).toString()
+  expect(head).toBe("%PDF")
+})
+
+test("未対応の拡張子は UNSUPPORTED_INPUT をスロー", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  // tmpファイルとして .txt を作成
+  const tmp = join(newTmpDir(), "input.txt")
+  const { writeFileSync } = await import("node:fs")
+  writeFileSync(tmp, "hello")
+  await expect(
+    convertHtmlToPdf(tmp, out, {})
+  ).rejects.toMatchObject({
+    code: "UNSUPPORTED_INPUT",
+  })
+})

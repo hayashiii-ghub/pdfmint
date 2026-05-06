@@ -1,7 +1,9 @@
 import puppeteer from "puppeteer"
-import { existsSync } from "node:fs"
-import { dirname, resolve } from "node:path"
+import { existsSync, readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs"
+import { dirname, extname, resolve, join } from "node:path"
+import { tmpdir } from "node:os"
 import { PdfMintError } from "./errors"
+import { markdownToHtml } from "./markdown"
 
 export interface ConvertOptions {
   format?: "A4" | "A3" | "Letter" | "Legal"
@@ -49,10 +51,30 @@ export async function convertHtmlToPdf(
   const format = options.format ?? "A4"
   const margin = options.margin ?? "0"
 
+  // 入力ファイル種別の判定 + Markdown→HTML 変換
+  const ext = extname(inputAbs).toLowerCase()
+  let renderTarget = inputAbs
+  let mdTmpDir: string | null = null
+  if (ext === ".md" || ext === ".markdown") {
+    const md = readFileSync(inputAbs, "utf-8")
+    const html = markdownToHtml(md)
+    mdTmpDir = mkdtempSync(join(tmpdir(), "pdfmint-md-"))
+    renderTarget = join(mdTmpDir, "rendered.html")
+    writeFileSync(renderTarget, html, "utf-8")
+  } else if (ext !== ".html" && ext !== ".htm") {
+    throw new PdfMintError(
+      "UNSUPPORTED_INPUT",
+      `未対応のファイル形式です: ${ext}`,
+      ".html, .htm, .md, .markdown のいずれかを指定してください。",
+      { input: inputPath }
+    )
+  }
+
   let browser
   try {
     browser = await puppeteer.launch()
   } catch (err) {
+    if (mdTmpDir) rmSync(mdTmpDir, { recursive: true, force: true })
     throw new PdfMintError(
       "BROWSER_LAUNCH_FAILED",
       `Chromium の起動に失敗しました: ${(err as Error).message}`,
@@ -64,7 +86,7 @@ export async function convertHtmlToPdf(
   try {
     const page = await browser.newPage()
     try {
-      await page.goto(`file://${inputAbs}`, { waitUntil: "networkidle0" })
+      await page.goto(`file://${renderTarget}`, { waitUntil: "networkidle0" })
     } catch (err) {
       throw new PdfMintError(
         "PAGE_LOAD_FAILED",
@@ -92,6 +114,7 @@ export async function convertHtmlToPdf(
     }
   } finally {
     await browser.close()
+    if (mdTmpDir) rmSync(mdTmpDir, { recursive: true, force: true })
   }
 
   const { statSync } = await import("node:fs")
