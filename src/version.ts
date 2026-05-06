@@ -3,22 +3,19 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 export function getVersion(): string {
-  // package.json は dist/cli.js から見て ../package.json (publish時)
-  // 開発時は src/version.ts から見て ../package.json
+  // path.join はファイル名を含む here の最後の segment を ".." で打ち消すので、
+  // src/version.ts の場合: ../../package.json → リポジトリルート
+  // dist/cli.js の場合（publish時）: ../../package.json → パッケージルート
+  // 両ケースで同じ相対パスが使える
   const here = fileURLToPath(import.meta.url)
-  const candidates = [
-    join(here, "..", "..", "package.json"), // src/version.ts → ../package.json
-    join(here, "..", "package.json"),       // dist/cli.js → ../package.json
-  ]
-  for (const path of candidates) {
-    try {
-      const pkg = JSON.parse(readFileSync(path, "utf-8"))
-      if (pkg.name === "@hayashiii/pdfmint") {
-        return pkg.version
-      }
-    } catch {
-      // 次の候補を試す
+  const packageJsonPath = join(here, "..", "..", "package.json")
+  try {
+    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf-8"))
+    if (pkg.name === "@hayashiii/pdfmint") {
+      return pkg.version
     }
+  } catch {
+    // package.json が見つからない / パースエラー → fallback
   }
   return "0.0.0-unknown"
 }
