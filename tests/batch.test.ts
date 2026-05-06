@@ -41,3 +41,21 @@ test("出力先ディレクトリが存在しない場合 OUTPUT_DIR_NOT_FOUND �
     code: "OUTPUT_DIR_NOT_FOUND",
   })
 })
+
+test("一部のファイルが失敗しても他は成功する（エラー集約）", async () => {
+  const inDir = newTmpDir()
+  const outDir = newTmpDir()
+  const { writeFileSync } = await import("node:fs")
+
+  // 有効な HTML
+  copyFileSync(join(FIXTURES, "sample.html"), join(inDir, "valid.html"))
+  // 未対応拡張子（UNSUPPORTED_INPUT を引き起こす）
+  writeFileSync(join(inDir, "invalid.txt"), "not html")
+
+  const { results, errors } = await convertBatch(`${inDir}/*`, outDir, {})
+  expect(results).toHaveLength(1)
+  expect(errors).toHaveLength(1)
+  expect(results[0]?.output).toContain("valid.pdf")
+  expect(errors[0]?.code).toBe("UNSUPPORTED_INPUT")
+  expect(errors[0]?.input).toContain("invalid.txt")
+})
