@@ -2,7 +2,6 @@ import { convertHtmlToPdf, type ConvertOptions } from "./convert"
 import { convertBatch } from "./batch"
 import { formatSuccessSingle, formatSuccessBatch, formatError, type OutputFormat } from "./output"
 import { getVersion } from "./version"
-import { PdfMintError } from "./errors"
 
 const HELP = `pdfmint - HTML/Markdown → PDF converter (AI-friendly CLI)
 
