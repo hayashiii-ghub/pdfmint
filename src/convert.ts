@@ -72,7 +72,9 @@ export async function convertHtmlToPdf(
 
   let browser
   try {
-    browser = await puppeteer.launch()
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    })
   } catch (err) {
     if (mdTmpDir) rmSync(mdTmpDir, { recursive: true, force: true })
     throw new PdfMintError(
