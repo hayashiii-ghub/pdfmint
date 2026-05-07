@@ -2,8 +2,10 @@
 
 # @hayashiii/pdfmint
 
+[![npm version](https://img.shields.io/npm/v/@hayashiii/pdfmint.svg)](https://www.npmjs.com/package/@hayashiii/pdfmint)
+[![npm downloads](https://img.shields.io/npm/dm/@hayashiii/pdfmint.svg)](https://www.npmjs.com/package/@hayashiii/pdfmint)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org)
+[![Node](https://img.shields.io/node/v/@hayashiii/pdfmint.svg)](https://nodejs.org)
 
 **AI-agent-first** CLI for converting HTML/Markdown to clean PDFs (with great Japanese font support). Designed so that AI agents (Claude Code, Codex, etc.) can generate HTML and pipeline it into PDF.
 
@@ -73,6 +75,27 @@ pdfmint invoice.html invoice.pdf --json
 }
 ```
 
+---
+
+## Notes
+
+- **Images and fonts**: use absolute paths or `data:` URLs in HTML — Puppeteer's `file://` resolution may not behave as expected for relative paths.
+- **Print CSS**: declare `@page` rules and margins in your HTML to combine with the default `--margin 0` for clean output.
+- **Japanese fonts**: Markdown input uses default CSS targeting Hiragino Sans. For HTML input, set fonts in your own `<style>`.
+- **AI agent integration**: always pass `--json` (progress logs go to stderr, the result JSON goes to stdout).
+
+---
+
 ## License
 
-MIT
+MIT © 2026 Hayashi
+
+---
+
+## Links
+
+- [GitHub repository](https://github.com/hayashiii-ghub/pdfmint)
+- [Issues](https://github.com/hayashiii-ghub/pdfmint/issues)
+- [npm](https://www.npmjs.com/package/@hayashiii/pdfmint)
+- [AGENTS.md](./AGENTS.md) — AI agent guide
+- [CHANGELOG](./CHANGELOG.md)

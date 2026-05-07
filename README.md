@@ -2,8 +2,10 @@
 
 # @hayashiii/pdfmint
 
+[![npm version](https://img.shields.io/npm/v/@hayashiii/pdfmint.svg)](https://www.npmjs.com/package/@hayashiii/pdfmint)
+[![npm downloads](https://img.shields.io/npm/dm/@hayashiii/pdfmint.svg)](https://www.npmjs.com/package/@hayashiii/pdfmint)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org)
+[![Node](https://img.shields.io/node/v/@hayashiii/pdfmint.svg)](https://nodejs.org)
 
 HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントファースト** な CLI ツール。AIエージェントが生成したHTMLを、コマンド一発でPDF化。
 
@@ -106,6 +108,27 @@ bun src/cli.ts <input> <output>  # 直接実行
 bun run build  # dist/cli.js 生成
 ```
 
+---
+
+## 注意
+
+- **画像・フォント**: HTML 内の `src` は絶対パスまたは `data:` URL にしてください(Puppeteer の `file://` 環境では相対パスのリゾルブが期待通り動かないケースがあります)
+- **印刷用 CSS**: `@page` ルールで余白等を HTML 側に書いておくと、`--margin` のデフォルト 0 と組み合わせて綺麗に印刷できます
+- **日本語フォント**: Markdown 入力時はデフォルト CSS が Hiragino Sans を指定。HTML 入力時は自分で `<style>` に指定してください
+- **AIエージェント連携時**: 必ず `--json` を付けてください(進捗ログは stderr、結果 JSON は stdout に分離)
+
+---
+
 ## ライセンス
 
-MIT
+MIT © 2026 Hayashi
+
+---
+
+## リンク
+
+- [GitHubリポジトリ](https://github.com/hayashiii-ghub/pdfmint)
+- [Issues](https://github.com/hayashiii-ghub/pdfmint/issues)
+- [npm](https://www.npmjs.com/package/@hayashiii/pdfmint)
+- [AGENTS.md](./AGENTS.md) — AIエージェント向け仕様書
+- [CHANGELOG](./CHANGELOG.md)
