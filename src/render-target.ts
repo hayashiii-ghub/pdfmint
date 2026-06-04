@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { extname, join, resolve } from "node:path"
 import { tmpdir } from "node:os"
 import { PdfMintError } from "./errors"
-import { markdownToHtml } from "./markdown"
+import { markdownToHtml, type MarkdownOptions } from "./markdown"
 
 export interface RenderTarget {
   inputAbs: string
@@ -10,7 +10,7 @@ export interface RenderTarget {
   cleanup: () => void
 }
 
-export function prepareRenderTarget(inputPath: string): RenderTarget {
+export function prepareRenderTarget(inputPath: string, markdownOptions: MarkdownOptions = {}): RenderTarget {
   const inputAbs = resolve(inputPath)
 
   if (!existsSync(inputAbs)) {
@@ -33,7 +33,7 @@ export function prepareRenderTarget(inputPath: string): RenderTarget {
 
   if (ext === ".md" || ext === ".markdown") {
     const md = readFileSync(inputAbs, "utf-8")
-    const html = markdownToHtml(md)
+    const html = markdownToHtml(md, markdownOptions)
     const tmpDir = mkdtempSync(join(tmpdir(), "pdfmint-md-"))
     const renderPath = join(tmpDir, "rendered.html")
     writeFileSync(renderPath, html, "utf-8")

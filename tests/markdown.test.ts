@@ -11,7 +11,14 @@ test("Markdown を HTML 文字列に変換する", () => {
 
 test("HTML には日本語フォント指定の CSS が含まれる", () => {
   const html = markdownToHtml("# テスト")
-  expect(html).toContain("Hiragino")
+  expect(html).toContain('"Noto Sans JP"')
+  expect(html).toContain("sans-serif")
+})
+
+test("serif preset は Noto Serif JP を優先する", () => {
+  const html = markdownToHtml("# テスト", { font: "serif" })
+  expect(html).toContain('"Noto Serif JP"')
+  expect(html).toContain("serif")
 })
 
 test("HTML は完全な HTML ドキュメント（<!DOCTYPE html> から </html>）", () => {
