@@ -36,6 +36,9 @@ pdfmint invoice.html invoice.pdf
 # Markdown → PDF
 pdfmint resume.md resume.pdf
 
+# Generate PDF + high-resolution PNG together
+pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3
+
 # Batch
 pdfmint batch "./html/*.html" ./pdf/
 
@@ -61,6 +64,10 @@ pdfmint invoice.html invoice.pdf --json
 | `--margin <value>` | 0 | Margin |
 | `--landscape` | off | Landscape orientation |
 | `--no-background` | off | Disable CSS backgrounds |
+| `--png <output.png>` | off | Also render a PNG from the same input |
+| `--viewport <WxH>` | 1055x1491 | PNG viewport size |
+| `--scale <number>` | 3 | PNG device scale factor |
+| `--expect-pages <number>` | off | Fail when generated PDF page count differs |
 
 ## JSON Output Example
 
@@ -71,7 +78,28 @@ pdfmint invoice.html invoice.pdf --json
   "output": "/abs/invoice.pdf",
   "format": "A4",
   "size_bytes": 4827410,
+  "page_count": 1,
   "duration_ms": 1234
+}
+```
+
+When generating PDF and PNG together:
+
+```json
+{
+  "success": true,
+  "input": "/abs/report.html",
+  "output": "/abs/report.pdf",
+  "format": "A4",
+  "size_bytes": 920701,
+  "duration_ms": 3042,
+  "page_count": 1,
+  "png": {
+    "output": "/abs/report.png",
+    "width": 3165,
+    "height": 4473,
+    "size_bytes": 10078027
+  }
 }
 ```
 
@@ -81,6 +109,8 @@ pdfmint invoice.html invoice.pdf --json
 
 - **Images and fonts**: use absolute paths or `data:` URLs in HTML — Puppeteer's `file://` resolution may not behave as expected for relative paths.
 - **Print CSS**: declare `@page` rules and margins in your HTML to combine with the default `--margin 0` for clean output.
+- **Single-page reports**: pass `--expect-pages 1` to catch accidental second pages.
+- **Image deliverables**: use `--png` with `--viewport` / `--scale` to produce a shareable PNG and printable PDF from the same HTML.
 - **Japanese fonts**: Markdown input uses default CSS targeting Hiragino Sans. For HTML input, set fonts in your own `<style>`.
 - **AI agent integration**: always pass `--json` (progress logs go to stderr, the result JSON goes to stdout).
 

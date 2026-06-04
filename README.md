@@ -40,6 +40,9 @@ pdfmint invoice.html invoice.pdf
 # Markdown→PDF
 pdfmint resume.md resume.pdf
 
+# PDF + 高解像度 PNG を同時生成
+pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3
+
 # バッチ変換
 pdfmint batch "./html/*.html" ./pdf/
 
@@ -65,6 +68,10 @@ pdfmint invoice.html invoice.pdf --json
 | `--margin <value>` | 0 | 余白 |
 | `--landscape` | off | 横向き |
 | `--no-background` | off | CSS背景無効 |
+| `--png <output.png>` | off | PDF と同じ入力から PNG も生成 |
+| `--viewport <WxH>` | 1055x1491 | PNG の画面サイズ |
+| `--scale <number>` | 3 | PNG のデバイススケール |
+| `--expect-pages <number>` | off | 生成PDFのページ数が違えばエラー |
 
 ## JSON 出力例
 
@@ -75,7 +82,28 @@ pdfmint invoice.html invoice.pdf --json
   "output": "/abs/invoice.pdf",
   "format": "A4",
   "size_bytes": 4827410,
+  "page_count": 1,
   "duration_ms": 1234
+}
+```
+
+PDF と PNG を同時生成した場合:
+
+```json
+{
+  "success": true,
+  "input": "/abs/report.html",
+  "output": "/abs/report.pdf",
+  "format": "A4",
+  "size_bytes": 920701,
+  "duration_ms": 3042,
+  "page_count": 1,
+  "png": {
+    "output": "/abs/report.png",
+    "width": 3165,
+    "height": 4473,
+    "size_bytes": 10078027
+  }
 }
 ```
 
@@ -114,6 +142,8 @@ bun run build  # dist/cli.js 生成
 
 - **画像・フォント**: HTML 内の `src` は絶対パスまたは `data:` URL にしてください(Puppeteer の `file://` 環境では相対パスのリゾルブが期待通り動かないケースがあります)
 - **印刷用 CSS**: `@page` ルールで余白等を HTML 側に書いておくと、`--margin` のデフォルト 0 と組み合わせて綺麗に印刷できます
+- **1枚ものの帳票**: `--expect-pages 1` を付けると、意図せず2ページ目に流れたPDFを検出できます
+- **画像納品**: `--png` と `--viewport` / `--scale` を使うと、同じHTMLから共有用PNGと提出用PDFを同時に作れます
 - **日本語フォント**: Markdown 入力時はデフォルト CSS が Hiragino Sans を指定。HTML 入力時は自分で `<style>` に指定してください
 - **AIエージェント連携時**: 必ず `--json` を付けてください(進捗ログは stderr、結果 JSON は stdout に分離)
 

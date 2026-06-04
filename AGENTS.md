@@ -27,6 +27,25 @@ Always pass `--json` when invoked by an agent for structured output.
 - `.md` / `.markdown` → converted to HTML internally with default Japanese-friendly CSS, then to PDF
 - Other extensions → error `UNSUPPORTED_INPUT`
 
+## PNG and page-count validation
+
+Single-file conversion can also render a PNG from the same HTML/Markdown input:
+
+```bash
+pdfmint report.html report.pdf \
+  --png report.png \
+  --viewport 1055x1491 \
+  --scale 3 \
+  --expect-pages 1 \
+  --json
+```
+
+- Use `--png <output.png>` to create a PNG alongside the PDF.
+- Use `--viewport <width>x<height>` for the screenshot viewport.
+- Use `--scale <number>` for high-resolution PNG output.
+- Use `--expect-pages <number>` to fail when the generated PDF has an unexpected page count.
+- `--png`, `--viewport`, and `--scale` are not supported for `batch` yet.
+
 ## Output (`--json`)
 
 ### Success (single)
@@ -37,6 +56,7 @@ Always pass `--json` when invoked by an agent for structured output.
   "output": "/abs/out.pdf",
   "format": "A4",
   "size_bytes": 12345,
+  "page_count": 1,
   "duration_ms": 1000
 }
 ```
@@ -78,6 +98,9 @@ Always pass `--json` when invoked by an agent for structured output.
 | `BROWSER_LAUNCH_FAILED` | Run `bunx puppeteer browsers install chrome` |
 | `PAGE_LOAD_FAILED` | Check HTML for broken external resources (fonts, images) |
 | `PDF_GENERATION_FAILED` | Check output path / disk space |
+| `PNG_GENERATION_FAILED` | Check viewport, scale, output path, and disk space |
+| `INVALID_VIEWPORT` | Use `--viewport <width>x<height>` and positive numeric scale |
+| `PAGE_COUNT_MISMATCH` | Fix print CSS or expected page count |
 | `BATCH_NO_MATCHES` | Verify glob pattern; check files exist |
 
 ## Common tasks
@@ -99,11 +122,19 @@ Always pass `--json` when invoked by an agent for structured output.
 3. `pdfmint batch "./reports/*.html" ./pdf/ --json`
 4. Parse `errors` array; retry failed entries individually
 
+### Generate one-page visual report artifacts
+1. Write the final report as a single HTML file with screen CSS and `@media print`
+2. Run `pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3 --expect-pages 1 --json`
+3. Parse `page_count` and `png` in the JSON result
+4. Report both output paths to the user
+
 ## Best practices for AI agents
 
 - **Always use `--json`** when invoking from an agent — easier to parse than text output
 - **Generate absolute paths** in your HTML when referring to images/fonts (relative paths break inside Puppeteer)
 - **Use `<style>` blocks inline** — avoid external CSS unless you control the path
+- **Use one HTML source of truth** when generating both PNG and PDF; avoid permanent wrapper HTML files
+- **Use `--expect-pages 1`** for one-page reports so accidental pagination is caught
 - **For Japanese text**, no special config needed — default CSS uses Hiragino Sans
 - **For QR codes**, embed as `<img src="data:image/svg+xml;base64,...">` (until v0.2.0 adds native QR support)
 - **On `PAGE_LOAD_FAILED`**, suggest the user check external resources or simplify HTML

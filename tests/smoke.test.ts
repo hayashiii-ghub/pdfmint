@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test"
-import { existsSync, mkdtempSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -56,6 +56,65 @@ test("--json フラグで JSON 出力", async () => {
   const json = JSON.parse(stdoutText.trim())
   expect(json.success).toBe(true)
   expect(json.output).toBe(out)
+  expect(json.page_count).toBe(1)
+})
+
+test("--png フラグで PDF と PNG を同時生成し JSON に PNG 情報を含める", async () => {
+  const dir = newTmpDir()
+  const pdf = join(dir, "out.pdf")
+  const png = join(dir, "out.png")
+  const proc = Bun.spawn(
+    [
+      "bun",
+      CLI,
+      join(FIXTURES, "sample.html"),
+      pdf,
+      "--png",
+      png,
+      "--viewport",
+      "800x600",
+      "--scale",
+      "1",
+      "--json",
+    ],
+    {
+      stdout: "pipe",
+      stderr: "pipe",
+    }
+  )
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(0)
+  expect(existsSync(pdf)).toBe(true)
+  expect(existsSync(png)).toBe(true)
+  expect(readFileSync(png).subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a")
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(true)
+  expect(json.output).toBe(pdf)
+  expect(json.png).toMatchObject({
+    output: png,
+    width: 800,
+    height: 600,
+  })
+  expect(json.png.size_bytes).toBeGreaterThan(1000)
+})
+
+test("--expect-pages はページ数不一致を JSON エラーにする", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  const proc = Bun.spawn(
+    ["bun", CLI, join(FIXTURES, "sample.html"), out, "--expect-pages", "99", "--json"],
+    {
+      stdout: "pipe",
+      stderr: "pipe",
+    }
+  )
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(1)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(false)
+  expect(json.error.code).toBe("PAGE_COUNT_MISMATCH")
+  expect(json.error.expected_pages).toBe(99)
 })
 
 test("入力ファイル不在のエラー（--json）", async () => {
