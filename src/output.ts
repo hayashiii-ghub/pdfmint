@@ -18,7 +18,14 @@ export function formatSuccessSingle(result: ConvertResult, format: OutputFormat)
   }
   // text
   const sizeKB = (result.size_bytes / 1024).toFixed(1)
-  return `✓ ${result.output} (${sizeKB}KB, ${result.duration_ms}ms)`
+  const parts = [`✓ ${result.output} (${sizeKB}KB, ${result.duration_ms}ms)`]
+  if (result.png) {
+    parts.push(`  PNG: ${result.png.output} (${(result.png.size_bytes / 1024).toFixed(1)}KB)`)
+  }
+  if (result.page_count !== undefined) {
+    parts.push(`  pages: ${result.page_count}`)
+  }
+  return parts.join("\n")
 }
 
 export function formatSuccessBatch(

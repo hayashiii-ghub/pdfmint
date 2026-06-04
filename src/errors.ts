@@ -7,12 +7,17 @@ export type ErrorCode =
   | "BROWSER_LAUNCH_FAILED"
   | "PAGE_LOAD_FAILED"
   | "PDF_GENERATION_FAILED"
+  | "PNG_GENERATION_FAILED"
+  | "INVALID_VIEWPORT"
+  | "PAGE_COUNT_MISMATCH"
   | "BATCH_NO_MATCHES"
 
 export interface ErrorContext {
   input?: string
   output?: string
   pattern?: string
+  expected_pages?: number
+  actual_pages?: number
 }
 
 export class PdfMintError extends Error {
