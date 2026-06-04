@@ -1,9 +1,22 @@
 import { marked } from "marked"
 
-const DEFAULT_CSS = `
+export type MarkdownFontPreset = "sans" | "serif"
+
+export interface MarkdownOptions {
+  font?: MarkdownFontPreset
+  customCss?: string
+}
+
+const FONT_STACKS: Record<MarkdownFontPreset, string> = {
+  sans: `"Noto Sans JP", "Noto Sans CJK JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif`,
+  serif: `"Noto Serif JP", "Noto Serif CJK JP", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif`,
+}
+
+function defaultCss(font: MarkdownFontPreset): string {
+  return `
 @page { size: A4; margin: 20mm; }
 body {
-  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+  font-family: ${FONT_STACKS[font]};
   font-size: 11pt;
   line-height: 1.7;
   color: #1a1a1a;
@@ -22,10 +35,12 @@ pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; 
 pre code { background: none; padding: 0; }
 blockquote { border-left: 4px solid #ddd; padding-left: 1em; color: #666; margin: 1em 0; }
 `
+}
 
-export function markdownToHtml(md: string, customCss?: string): string {
+export function markdownToHtml(md: string, options: MarkdownOptions | string = {}): string {
   const body = marked.parse(md, { async: false }) as string
-  const css = customCss ?? DEFAULT_CSS
+  const resolvedOptions = typeof options === "string" ? { customCss: options } : options
+  const css = resolvedOptions.customCss ?? defaultCss(resolvedOptions.font ?? "sans")
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>

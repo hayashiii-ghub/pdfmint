@@ -117,6 +117,23 @@ test("--expect-pages はページ数不一致を JSON エラーにする", async
   expect(json.error.expected_pages).toBe(99)
 })
 
+test("--font に不正な値を指定すると JSON エラーにする", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  const proc = Bun.spawn(
+    ["bun", CLI, join(FIXTURES, "sample.md"), out, "--font", "gothic", "--json"],
+    {
+      stdout: "pipe",
+      stderr: "pipe",
+    }
+  )
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(1)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(false)
+  expect(json.error.code).toBe("INVALID_FONT")
+})
+
 test("入力ファイル不在のエラー（--json）", async () => {
   const out = join(newTmpDir(), "out.pdf")
   const proc = Bun.spawn(["bun", CLI, "/nonexistent/in.html", out, "--json"], {

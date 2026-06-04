@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path"
 import { PdfMintError } from "./errors"
 import { prepareRenderTarget } from "./render-target"
 import { renderArtifacts, type PngArtifact } from "./render"
+import type { MarkdownFontPreset } from "./markdown"
 
 export interface PngOptions {
   output: string
@@ -18,6 +19,7 @@ export interface ConvertOptions {
   noBackground?: boolean
   png?: PngOptions
   expectPages?: number
+  font?: MarkdownFontPreset
 }
 
 export interface ConvertResult {
@@ -49,7 +51,7 @@ export async function convertHtmlToPdf(
 ): Promise<ConvertResult> {
   const start = Date.now()
   const outputAbs = resolve(outputPath)
-  const target = prepareRenderTarget(inputPath)
+  const target = prepareRenderTarget(inputPath, { font: options.font })
   const format = options.format ?? "A4"
   const margin = options.margin ?? "0"
 

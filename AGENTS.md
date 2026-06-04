@@ -27,6 +27,19 @@ Always pass `--json` when invoked by an agent for structured output.
 - `.md` / `.markdown` → converted to HTML internally with default Japanese-friendly CSS, then to PDF
 - Other extensions → error `UNSUPPORTED_INPUT`
 
+## Markdown font presets
+
+Markdown input can choose the default Japanese font preset:
+
+```bash
+pdfmint report.md report.pdf --font sans --json
+pdfmint report.md report.pdf --font serif --json
+```
+
+- `--font sans` is the default and prioritizes Noto Sans JP.
+- `--font serif` prioritizes Noto Serif JP for more formal reports.
+- HTML input is not modified; set fonts in the HTML `<style>` block.
+
 ## PNG and page-count validation
 
 Single-file conversion can also render a PNG from the same HTML/Markdown input:
@@ -100,6 +113,7 @@ pdfmint report.html report.pdf \
 | `PDF_GENERATION_FAILED` | Check output path / disk space |
 | `PNG_GENERATION_FAILED` | Check viewport, scale, output path, and disk space |
 | `INVALID_VIEWPORT` | Use `--viewport <width>x<height>` and positive numeric scale |
+| `INVALID_FONT` | Use `--font sans` or `--font serif` |
 | `PAGE_COUNT_MISMATCH` | Fix print CSS or expected page count |
 | `BATCH_NO_MATCHES` | Verify glob pattern; check files exist |
 
@@ -133,8 +147,9 @@ pdfmint report.html report.pdf \
 - **Always use `--json`** when invoking from an agent — easier to parse than text output
 - **Generate absolute paths** in your HTML when referring to images/fonts (relative paths break inside Puppeteer)
 - **Use `<style>` blocks inline** — avoid external CSS unless you control the path
+- **Use `--font serif`** for Markdown reports that should look more formal; use HTML CSS for fully custom typography
 - **Use one HTML source of truth** when generating both PNG and PDF; avoid permanent wrapper HTML files
 - **Use `--expect-pages 1`** for one-page reports so accidental pagination is caught
-- **For Japanese text**, no special config needed — default CSS uses Hiragino Sans
+- **For Japanese text**, Markdown defaults to `--font sans` with Noto Sans JP first; use `--font serif` for Noto Serif JP first
 - **For QR codes**, embed as `<img src="data:image/svg+xml;base64,...">` (until v0.2.0 adds native QR support)
 - **On `PAGE_LOAD_FAILED`**, suggest the user check external resources or simplify HTML

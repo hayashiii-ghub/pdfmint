@@ -3,6 +3,7 @@ import { convertBatch } from "./batch"
 import { formatSuccessSingle, formatSuccessBatch, formatError, type OutputFormat } from "./output"
 import { getVersion } from "./version"
 import { PdfMintError } from "./errors"
+import type { MarkdownFontPreset } from "./markdown"
 
 const HELP = `pdfmint - HTML/Markdown → PDF converter (AI-friendly CLI)
 
@@ -18,6 +19,7 @@ Flags (apply to all commands):
   --margin <value>                      Margin (e.g., 10mm; default: 0)
   --landscape                           Landscape orientation
   --no-background                       Disable CSS backgrounds
+  --font <sans|serif>                   Markdown default Japanese font preset (default: sans)
   --png <output.png>                    Also render a PNG screenshot (single conversion only)
   --viewport <width>x<height>           PNG viewport (default: 1055x1491; with --png)
   --scale <number>                      PNG device scale factor (default: 3; with --png)
@@ -39,6 +41,7 @@ interface ParsedArgs {
   json: boolean
   format?: string
   margin?: string
+  font?: string
   landscape: boolean
   noBackground: boolean
   png?: string
@@ -67,6 +70,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     else if (a === "help" || a === "--help" || a === "-h") result.showHelp = true
     else if (a === "--format") result.format = argv[++i]
     else if (a === "--margin") result.margin = argv[++i]
+    else if (a === "--font") result.font = argv[++i]
     else if (a === "--png") result.png = argv[++i]
     else if (a === "--viewport") result.viewport = argv[++i]
     else if (a === "--scale") result.scale = argv[++i]
@@ -126,10 +130,22 @@ function parseViewport(value: string | undefined): { width: number; height: numb
   return { width, height }
 }
 
+function parseFontPreset(value: string | undefined): MarkdownFontPreset | undefined {
+  if (!value) return undefined
+  if (value === "sans" || value === "serif") return value
+  throw new PdfMintError(
+    "INVALID_FONT",
+    `font preset が不正です: ${value}`,
+    "--font には sans または serif を指定してください。",
+    {}
+  )
+}
+
 function buildOptions(args: ParsedArgs): ConvertOptions {
   const opts: ConvertOptions = {}
   if (args.format) opts.format = args.format as ConvertOptions["format"]
   if (args.margin) opts.margin = args.margin
+  if (args.font) opts.font = parseFontPreset(args.font)
   if (args.landscape) opts.landscape = true
   if (args.noBackground) opts.noBackground = true
   if (args.expectPages) opts.expectPages = parsePositiveInteger(args.expectPages, "--expect-pages")

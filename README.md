@@ -11,7 +11,7 @@ HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントフ�
 
 - 🤖 AIエージェント（Claude Code / Codex 等）が使う前提の構造化出力（`--json`）
 - 📝 HTML / Markdown 両対応
-- 🎨 日本語フォントを綺麗にレンダリング（Hiragino Sans 標準）
+- 🎨 日本語フォントを綺麗にレンダリング（Noto Sans JP 優先、Noto Serif JP も選択可）
 - 📦 Bun でも Node.js でも動く（`npm install -g` または `bun install -g`）
 - 🪶 Claude Code Skill 同梱（`/pdfmint` で呼び出し可能）
 
@@ -39,6 +39,9 @@ pdfmint invoice.html invoice.pdf
 
 # Markdown→PDF
 pdfmint resume.md resume.pdf
+
+# Markdown→PDF（明朝系）
+pdfmint report.md report.pdf --font serif
 
 # PDF + 高解像度 PNG を同時生成
 pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3
@@ -68,6 +71,7 @@ pdfmint invoice.html invoice.pdf --json
 | `--margin <value>` | 0 | 余白 |
 | `--landscape` | off | 横向き |
 | `--no-background` | off | CSS背景無効 |
+| `--font <sans\|serif>` | sans | Markdown入力時の日本語フォントpreset |
 | `--png <output.png>` | off | PDF と同じ入力から PNG も生成 |
 | `--viewport <WxH>` | 1055x1491 | PNG の画面サイズ |
 | `--scale <number>` | 3 | PNG のデバイススケール |
@@ -144,7 +148,7 @@ bun run build  # dist/cli.js 生成
 - **印刷用 CSS**: `@page` ルールで余白等を HTML 側に書いておくと、`--margin` のデフォルト 0 と組み合わせて綺麗に印刷できます
 - **1枚ものの帳票**: `--expect-pages 1` を付けると、意図せず2ページ目に流れたPDFを検出できます
 - **画像納品**: `--png` と `--viewport` / `--scale` を使うと、同じHTMLから共有用PNGと提出用PDFを同時に作れます
-- **日本語フォント**: Markdown 入力時はデフォルト CSS が Hiragino Sans を指定。HTML 入力時は自分で `<style>` に指定してください
+- **日本語フォント**: Markdown 入力時は `--font sans` が既定で Noto Sans JP を優先します。明朝系にしたい場合は `--font serif` で Noto Serif JP を優先します。HTML 入力時は自分で `<style>` に指定してください
 - **AIエージェント連携時**: 必ず `--json` を付けてください(進捗ログは stderr、結果 JSON は stdout に分離)
 
 ---
