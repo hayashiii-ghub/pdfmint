@@ -5,6 +5,12 @@
 このプロジェクトは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に従い、
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) を採用しています。
 
+## [0.2.1] - 2026-06-05
+
+### Changed
+- `glob` を 13系へ更新し、install時のdeprecated warningを解消
+- `marked` / `puppeteer` / `@types/bun` / `typescript` を最新互換版へ更新
+
 ## [0.2.0] - 2026-06-05
 
 ### Added
