@@ -54,6 +54,28 @@ interface ParsedArgs {
   showHelp: boolean
 }
 
+const PAPER_FORMATS = new Set(["A4", "A3", "Letter", "Legal"])
+const VALUE_FLAGS = {
+  "--format": "format",
+  "--margin": "margin",
+  "--font": "font",
+  "--css": "css",
+  "--png": "png",
+  "--viewport": "viewport",
+  "--scale": "scale",
+  "--expect-pages": "expectPages",
+} as const
+
+type ValueFlag = keyof typeof VALUE_FLAGS
+
+function invalidOption(message: string, hint = "pdfmint help で利用可能なオプションを確認してください。"): PdfMintError {
+  return new PdfMintError("INVALID_OPTION", message, hint, {})
+}
+
+function isValueFlag(value: string): value is ValueFlag {
+  return value in VALUE_FLAGS
+}
+
 function parseArgs(argv: string[]): ParsedArgs {
   const result: ParsedArgs = {
     positional: [],
@@ -63,6 +85,18 @@ function parseArgs(argv: string[]): ParsedArgs {
     showVersion: false,
     showHelp: false,
   }
+
+  function readValue(flag: string, index: number): string {
+    const value = argv[index + 1]
+    if (!value || value.startsWith("-")) {
+      throw invalidOption(
+        `${flag} には値を指定してください。`,
+        `${flag} <value> の形式で指定してください。`
+      )
+    }
+    return value
+  }
+
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]!
     if (a === "--json") result.json = true
@@ -70,14 +104,11 @@ function parseArgs(argv: string[]): ParsedArgs {
     else if (a === "--no-background") result.noBackground = true
     else if (a === "--version") result.showVersion = true
     else if (a === "help" || a === "--help" || a === "-h") result.showHelp = true
-    else if (a === "--format") result.format = argv[++i]
-    else if (a === "--margin") result.margin = argv[++i]
-    else if (a === "--font") result.font = argv[++i]
-    else if (a === "--css") result.css = argv[++i]
-    else if (a === "--png") result.png = argv[++i]
-    else if (a === "--viewport") result.viewport = argv[++i]
-    else if (a === "--scale") result.scale = argv[++i]
-    else if (a === "--expect-pages") result.expectPages = argv[++i]
+    else if (isValueFlag(a)) {
+      result[VALUE_FLAGS[a]] = readValue(a, i)
+      i++
+    }
+    else if (a.startsWith("-")) throw invalidOption(`未知のオプションです: ${a}`)
     else result.positional.push(a)
   }
   return result
@@ -144,9 +175,18 @@ function parseFontPreset(value: string | undefined): MarkdownFontPreset | undefi
   )
 }
 
+function parseFormat(value: string | undefined): ConvertOptions["format"] | undefined {
+  if (!value) return undefined
+  if (PAPER_FORMATS.has(value)) return value as ConvertOptions["format"]
+  throw invalidOption(
+    `format が不正です: ${value}`,
+    "--format には A4, A3, Letter, Legal のいずれかを指定してください。"
+  )
+}
+
 function buildOptions(args: ParsedArgs): ConvertOptions {
   const opts: ConvertOptions = {}
-  if (args.format) opts.format = args.format as ConvertOptions["format"]
+  if (args.format) opts.format = parseFormat(args.format)
   if (args.margin) opts.margin = args.margin
   if (args.font) opts.font = parseFontPreset(args.font)
   if (args.css) opts.css = args.css
@@ -172,23 +212,25 @@ function buildOptions(args: ParsedArgs): ConvertOptions {
 }
 
 async function main(argv: string[]): Promise<number> {
-  const args = parseArgs(argv)
-  const fmt: OutputFormat = args.json ? "json" : "text"
-
-  if (args.showVersion) {
-    console.log(getVersion())
-    return 0
-  }
-  if (args.showHelp) {
-    console.log(HELP)
-    return 0
-  }
-  if (args.positional.length === 0) {
-    console.log(HELP)
-    return 2
-  }
+  let fmt: OutputFormat = argv.includes("--json") ? "json" : "text"
 
   try {
+    const args = parseArgs(argv)
+    fmt = args.json ? "json" : "text"
+
+    if (args.showVersion) {
+      console.log(getVersion())
+      return 0
+    }
+    if (args.showHelp) {
+      console.log(HELP)
+      return 0
+    }
+    if (args.positional.length === 0) {
+      console.log(HELP)
+      return 2
+    }
+
     if (args.positional[0] === "batch") {
       if (args.png || args.viewport || args.scale) {
         throw new PdfMintError(
@@ -199,7 +241,13 @@ async function main(argv: string[]): Promise<number> {
         )
       }
       const [, pattern, outDir] = args.positional
-      if (!pattern || !outDir) {
+      if (!pattern || !outDir || args.positional.length !== 3) {
+        if (args.positional.length > 3) {
+          throw invalidOption(
+            `batch コマンドの引数が多すぎます: ${args.positional.slice(3).join(" ")}`,
+            "batch は pdfmint batch <pattern> <out-dir> の形式で指定してください。"
+          )
+        }
         console.log(HELP)
         return 2
       }
@@ -212,6 +260,12 @@ async function main(argv: string[]): Promise<number> {
     if (args.positional.length < 2) {
       console.log(HELP)
       return 2
+    }
+    if (args.positional.length > 2) {
+      throw invalidOption(
+        `単一変換の引数が多すぎます: ${args.positional.slice(2).join(" ")}`,
+        "単一変換は pdfmint <input> <output> の形式で指定してください。"
+      )
     }
     const [input, output] = args.positional
     const result = await convertHtmlToPdf(input!, output!, buildOptions(args))
