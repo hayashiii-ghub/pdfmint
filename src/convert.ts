@@ -20,6 +20,7 @@ export interface ConvertOptions {
   png?: PngOptions
   expectPages?: number
   font?: MarkdownFontPreset
+  css?: string
 }
 
 export interface ConvertResult {
@@ -51,7 +52,7 @@ export async function convertHtmlToPdf(
 ): Promise<ConvertResult> {
   const start = Date.now()
   const outputAbs = resolve(outputPath)
-  const target = prepareRenderTarget(inputPath, { font: options.font })
+  const target = prepareRenderTarget(inputPath, { font: options.font, cssPath: options.css })
   const format = options.format ?? "A4"
   const margin = options.margin ?? "0"
 

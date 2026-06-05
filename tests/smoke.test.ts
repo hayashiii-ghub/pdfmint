@@ -134,6 +134,25 @@ test("--font に不正な値を指定すると JSON エラーにする", async (
   expect(json.error.code).toBe("INVALID_FONT")
 })
 
+test("Markdown input with missing --css returns JSON INPUT_NOT_FOUND", async () => {
+  const dir = newTmpDir()
+  const out = join(dir, "out.pdf")
+  const proc = Bun.spawn(
+    ["bun", CLI, join(FIXTURES, "sample.md"), out, "--css", join(dir, "missing.css"), "--json"],
+    {
+      stdout: "pipe",
+      stderr: "pipe",
+    }
+  )
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(1)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(false)
+  expect(json.error.code).toBe("INPUT_NOT_FOUND")
+  expect(json.error.css).toBe(join(dir, "missing.css"))
+})
+
 test("入力ファイル不在のエラー（--json）", async () => {
   const out = join(newTmpDir(), "out.pdf")
   const proc = Bun.spawn(["bun", CLI, "/nonexistent/in.html", out, "--json"], {

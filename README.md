@@ -43,6 +43,9 @@ pdfmint resume.md resume.pdf
 # Markdown→PDF（明朝系）
 pdfmint report.md report.pdf --font serif
 
+# Markdown→PDF（CSSを固定）
+pdfmint report.md report.pdf --css report.css
+
 # PDF + 高解像度 PNG を同時生成
 pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3
 
@@ -72,6 +75,7 @@ pdfmint invoice.html invoice.pdf --json
 | `--landscape` | off | 横向き |
 | `--no-background` | off | CSS背景無効 |
 | `--font <sans\|serif>` | sans | Markdown入力時の日本語フォントpreset |
+| `--css <file.css>` | off | Markdown入力時のCSSをファイルから指定 |
 | `--png <output.png>` | off | PDF と同じ入力から PNG も生成 |
 | `--viewport <WxH>` | 1055x1491 | PNG の画面サイズ |
 | `--scale <number>` | 3 | PNG のデバイススケール |
@@ -148,7 +152,7 @@ bun run build  # dist/cli.js 生成
 - **印刷用 CSS**: `@page` ルールで余白等を HTML 側に書いておくと、`--margin` のデフォルト 0 と組み合わせて綺麗に印刷できます
 - **1枚ものの帳票**: `--expect-pages 1` を付けると、意図せず2ページ目に流れたPDFを検出できます
 - **画像納品**: `--png` と `--viewport` / `--scale` を使うと、同じHTMLから共有用PNGと提出用PDFを同時に作れます
-- **日本語フォント**: Markdown 入力時は `--font sans` が既定で Noto Sans JP を優先します。明朝系にしたい場合は `--font serif` で Noto Serif JP を優先します。HTML 入力時は自分で `<style>` に指定してください
+- **日本語フォント**: Markdown 入力時は `--font sans` が既定で Noto Sans JP を優先します。明朝系にしたい場合は `--font serif` で Noto Serif JP を優先します。納品物の書体・余白・見出しを固定したい場合は `--css report.css` を使ってCSSを指定してください。HTML 入力時は自分で `<style>` に指定してください
 - **AIエージェント連携時**: 必ず `--json` を付けてください(進捗ログは stderr、結果 JSON は stdout に分離)
 
 ---

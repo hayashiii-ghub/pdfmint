@@ -33,7 +33,8 @@ export function prepareRenderTarget(inputPath: string, markdownOptions: Markdown
 
   if (ext === ".md" || ext === ".markdown") {
     const md = readFileSync(inputAbs, "utf-8")
-    const html = markdownToHtml(md, markdownOptions)
+    const css = markdownOptions.cssPath ? readCustomCss(markdownOptions.cssPath) : undefined
+    const html = markdownToHtml(md, { ...markdownOptions, customCss: css ?? markdownOptions.customCss })
     const tmpDir = mkdtempSync(join(tmpdir(), "pdfmint-md-"))
     const renderPath = join(tmpDir, "rendered.html")
     writeFileSync(renderPath, html, "utf-8")
@@ -50,4 +51,17 @@ export function prepareRenderTarget(inputPath: string, markdownOptions: Markdown
     ".html, .htm, .md, .markdown のいずれかを指定してください。",
     { input: inputPath }
   )
+}
+
+function readCustomCss(cssPath: string): string {
+  const cssAbs = resolve(cssPath)
+  if (!existsSync(cssAbs)) {
+    throw new PdfMintError(
+      "INPUT_NOT_FOUND",
+      `CSSファイルが見つかりません: ${cssPath}`,
+      "CSSファイルのパスを確認してください。相対パスは現在の作業ディレクトリ基準で解釈されます。",
+      { css: cssPath }
+    )
+  }
+  return readFileSync(cssAbs, "utf-8")
 }

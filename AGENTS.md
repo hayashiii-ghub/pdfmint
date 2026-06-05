@@ -34,10 +34,12 @@ Markdown input can choose the default Japanese font preset:
 ```bash
 pdfmint report.md report.pdf --font sans --json
 pdfmint report.md report.pdf --font serif --json
+pdfmint report.md report.pdf --css report.css --json
 ```
 
 - `--font sans` is the default and prioritizes Noto Sans JP.
 - `--font serif` prioritizes Noto Serif JP for more formal reports.
+- `--css <file.css>` replaces the default Markdown CSS with a file, useful for `@font-face`, margins, and report-specific typography.
 - HTML input is not modified; set fonts in the HTML `<style>` block.
 
 ## PNG and page-count validation
@@ -148,8 +150,9 @@ pdfmint report.html report.pdf \
 - **Generate absolute paths** in your HTML when referring to images/fonts (relative paths break inside Puppeteer)
 - **Use `<style>` blocks inline** — avoid external CSS unless you control the path
 - **Use `--font serif`** for Markdown reports that should look more formal; use HTML CSS for fully custom typography
+- **Use `--css report.css`** for Markdown reports that need fixed fonts via `@font-face`, margins, or heading styles
 - **Use one HTML source of truth** when generating both PNG and PDF; avoid permanent wrapper HTML files
 - **Use `--expect-pages 1`** for one-page reports so accidental pagination is caught
-- **For Japanese text**, Markdown defaults to `--font sans` with Noto Sans JP first; use `--font serif` for Noto Serif JP first
+- **For Japanese text**, Markdown defaults to `--font sans` with Noto Sans JP first; use `--font serif` for Noto Serif JP first; use `--css` when the exact rendered font must be guaranteed
 - **For QR codes**, embed as `<img src="data:image/svg+xml;base64,...">` (until v0.2.0 adds native QR support)
 - **On `PAGE_LOAD_FAILED`**, suggest the user check external resources or simplify HTML

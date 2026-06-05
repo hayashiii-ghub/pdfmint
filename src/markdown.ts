@@ -5,6 +5,7 @@ export type MarkdownFontPreset = "sans" | "serif"
 export interface MarkdownOptions {
   font?: MarkdownFontPreset
   customCss?: string
+  cssPath?: string
 }
 
 const FONT_STACKS: Record<MarkdownFontPreset, string> = {

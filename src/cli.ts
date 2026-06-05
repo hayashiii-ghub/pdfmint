@@ -20,6 +20,7 @@ Flags (apply to all commands):
   --landscape                           Landscape orientation
   --no-background                       Disable CSS backgrounds
   --font <sans|serif>                   Markdown default Japanese font preset (default: sans)
+  --css <file.css>                      Custom CSS file for Markdown input
   --png <output.png>                    Also render a PNG screenshot (single conversion only)
   --viewport <width>x<height>           PNG viewport (default: 1055x1491; with --png)
   --scale <number>                      PNG device scale factor (default: 3; with --png)
@@ -42,6 +43,7 @@ interface ParsedArgs {
   format?: string
   margin?: string
   font?: string
+  css?: string
   landscape: boolean
   noBackground: boolean
   png?: string
@@ -71,6 +73,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     else if (a === "--format") result.format = argv[++i]
     else if (a === "--margin") result.margin = argv[++i]
     else if (a === "--font") result.font = argv[++i]
+    else if (a === "--css") result.css = argv[++i]
     else if (a === "--png") result.png = argv[++i]
     else if (a === "--viewport") result.viewport = argv[++i]
     else if (a === "--scale") result.scale = argv[++i]
@@ -146,6 +149,7 @@ function buildOptions(args: ParsedArgs): ConvertOptions {
   if (args.format) opts.format = args.format as ConvertOptions["format"]
   if (args.margin) opts.margin = args.margin
   if (args.font) opts.font = parseFontPreset(args.font)
+  if (args.css) opts.css = args.css
   if (args.landscape) opts.landscape = true
   if (args.noBackground) opts.noBackground = true
   if (args.expectPages) opts.expectPages = parsePositiveInteger(args.expectPages, "--expect-pages")
