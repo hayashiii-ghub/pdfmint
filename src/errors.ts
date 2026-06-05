@@ -16,6 +16,7 @@ export type ErrorCode =
 export interface ErrorContext {
   input?: string
   output?: string
+  css?: string
   pattern?: string
   expected_pages?: number
   actual_pages?: number

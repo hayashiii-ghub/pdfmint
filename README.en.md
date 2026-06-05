@@ -39,6 +39,9 @@ pdfmint resume.md resume.pdf
 # Markdown → PDF with serif Japanese preset
 pdfmint report.md report.pdf --font serif
 
+# Markdown → PDF with fixed CSS
+pdfmint report.md report.pdf --css report.css
+
 # Generate PDF + high-resolution PNG together
 pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3
 
@@ -68,6 +71,7 @@ pdfmint invoice.html invoice.pdf --json
 | `--landscape` | off | Landscape orientation |
 | `--no-background` | off | Disable CSS backgrounds |
 | `--font <sans\|serif>` | sans | Japanese font preset for Markdown input |
+| `--css <file.css>` | off | Custom CSS file for Markdown input |
 | `--png <output.png>` | off | Also render a PNG from the same input |
 | `--viewport <WxH>` | 1055x1491 | PNG viewport size |
 | `--scale <number>` | 3 | PNG device scale factor |
@@ -115,7 +119,7 @@ When generating PDF and PNG together:
 - **Print CSS**: declare `@page` rules and margins in your HTML to combine with the default `--margin 0` for clean output.
 - **Single-page reports**: pass `--expect-pages 1` to catch accidental second pages.
 - **Image deliverables**: use `--png` with `--viewport` / `--scale` to produce a shareable PNG and printable PDF from the same HTML.
-- **Japanese fonts**: Markdown input defaults to `--font sans`, prioritizing Noto Sans JP. Use `--font serif` to prioritize Noto Serif JP. For HTML input, set fonts in your own `<style>`.
+- **Japanese fonts**: Markdown input defaults to `--font sans`, prioritizing Noto Sans JP. Use `--font serif` to prioritize Noto Serif JP. Use `--css report.css` when you need fixed typography, margins, and heading styles for deliverables. For HTML input, set fonts in your own `<style>`.
 - **AI agent integration**: always pass `--json` (progress logs go to stderr, the result JSON goes to stdout).
 
 ---

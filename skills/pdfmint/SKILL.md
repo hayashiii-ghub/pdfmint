@@ -19,9 +19,10 @@ description: HTML/Markdown を綺麗な日本語PDFやPNGに変換する CLI ツ
 2. 出力先ディレクトリが存在することを確認（必要なら `mkdir -p`）
 3. PDFだけなら `pdfmint <input> <output> --json` を実行
 4. Markdown入力で明朝系にしたい場合は `--font serif` を付ける（既定は `--font sans`）
-5. PNGも必要なら `--png <output.png> --viewport <width>x<height> --scale <number>` を付ける
-6. 1ページ固定が必要なら `--expect-pages 1` を付ける
-7. JSON出力を解析して結果を報告
+5. Markdown入力で書体・余白・見出しを固定したい場合は `--css <file.css>` を付ける
+6. PNGも必要なら `--png <output.png> --viewport <width>x<height> --scale <number>` を付ける
+7. 1ページ固定が必要なら `--expect-pages 1` を付ける
+8. JSON出力を解析して結果を報告
 
 ## Examples
 
@@ -38,6 +39,11 @@ pdfmint resume.md resume.pdf --json
 ### Markdown→PDF（明朝系）
 ```bash
 pdfmint report.md report.pdf --font serif --json
+```
+
+### Markdown→PDF（CSS固定）
+```bash
+pdfmint report.md report.pdf --css report.css --json
 ```
 
 ### HTML→PDF + PNG
