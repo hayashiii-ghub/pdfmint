@@ -134,6 +134,82 @@ test("--font に不正な値を指定すると JSON エラーにする", async (
   expect(json.error.code).toBe("INVALID_FONT")
 })
 
+test("未知のオプションは JSON エラーにする", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  const proc = Bun.spawn(["bun", CLI, join(FIXTURES, "sample.html"), out, "--unknown", "--json"], {
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(1)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(false)
+  expect(json.error.code).toBe("INVALID_OPTION")
+})
+
+test("値が必要なオプションに値がない場合は JSON エラーにする", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  const proc = Bun.spawn(["bun", CLI, join(FIXTURES, "sample.html"), out, "--format", "--json"], {
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(1)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(false)
+  expect(json.error.code).toBe("INVALID_OPTION")
+})
+
+test("--format に不正な値を指定すると JSON エラーにする", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  const proc = Bun.spawn(
+    ["bun", CLI, join(FIXTURES, "sample.html"), out, "--format", "Tabloid", "--json"],
+    {
+      stdout: "pipe",
+      stderr: "pipe",
+    }
+  )
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(1)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(false)
+  expect(json.error.code).toBe("INVALID_OPTION")
+})
+
+test("単一変換で余分な positional 引数がある場合は JSON エラーにする", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  const proc = Bun.spawn(
+    ["bun", CLI, join(FIXTURES, "sample.html"), out, "extra", "--json"],
+    {
+      stdout: "pipe",
+      stderr: "pipe",
+    }
+  )
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(1)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(false)
+  expect(json.error.code).toBe("INVALID_OPTION")
+})
+
+test("batch で余分な positional 引数がある場合は JSON エラーにする", async () => {
+  const dir = newTmpDir()
+  const proc = Bun.spawn(["bun", CLI, "batch", `${dir}/*.html`, dir, "extra", "--json"], {
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(1)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(false)
+  expect(json.error.code).toBe("INVALID_OPTION")
+})
+
 test("Markdown input with missing --css returns JSON INPUT_NOT_FOUND", async () => {
   const dir = newTmpDir()
   const out = join(dir, "out.pdf")
