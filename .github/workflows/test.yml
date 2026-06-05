@@ -31,3 +31,6 @@ jobs:
 
       - name: Verify dist/cli.js exists
         run: test -f dist/cli.js && head -1 dist/cli.js
+
+      - name: Verify npm package
+        run: bun run pack:smoke
