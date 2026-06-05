@@ -1,6 +1,6 @@
 {
   "name": "@hayashiii/pdfmint",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "AI-friendly CLI for converting HTML/Markdown to clean Japanese PDFs. Designed for AI agents to generate HTML and pipeline into PDF.",
   "type": "module",
   "bin": {

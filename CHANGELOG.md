@@ -5,6 +5,11 @@
 このプロジェクトは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に従い、
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) を採用しています。
 
+## [0.2.2] - 2026-06-05
+
+### Fixed
+- 未知のCLIオプション、値不足、不正な `--format`、余分なpositional引数を変換前に `INVALID_OPTION` として検出
+
 ## [0.2.1] - 2026-06-05
 
 ### Changed
