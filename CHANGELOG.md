@@ -5,6 +5,11 @@
 このプロジェクトは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に従い、
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) を採用しています。
 
+## [Unreleased]
+
+### Changed
+- README と package description の導入説明を、成果物・AIエージェント連携・品質チェックが伝わる内容に更新
+
 ## [0.2.2] - 2026-06-05
 
 ### Fixed
