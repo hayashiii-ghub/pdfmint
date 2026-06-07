@@ -7,13 +7,15 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node](https://img.shields.io/node/v/@hayashiii/pdfmint.svg)](https://nodejs.org)
 
-**AI-agent-first** CLI for converting HTML/Markdown to clean PDFs (with great Japanese font support). Designed so that AI agents (Claude Code, Codex, etc.) can generate HTML and pipeline it into PDF.
+**AI-agent-first** CLI for converting HTML/Markdown to clean Japanese PDFs. Designed to turn agent-generated drafts into shareable PDF/PNG deliverables with one command.
 
-- 🤖 Structured output (`--json`) for AI agents
-- 📝 HTML and Markdown both supported
+- 📄 Outputs are plain PDF files plus optional PNG files (no database required)
+- 🤖 One-command workflow for AI agents such as Claude Code and Codex (Claude Code Skill bundled)
+- 📡 Structured output via `--json` so agents can parse conversion results
+- ⚙️ Structured errors (`code` + `hint`) and `--expect-pages` make retries and quality checks easier
+- 📝 Supports HTML, Markdown, and batch conversion for agent-generated document sets
 - 🎨 Beautiful Japanese rendering (Noto Sans JP first; Noto Serif JP selectable)
-- 📦 Works with both Bun and Node.js
-- 🪶 Claude Code Skill bundled
+- 🔧 TypeScript implementation with Bun for development and Node.js 22+ for distribution
 
 ---
 

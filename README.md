@@ -7,13 +7,15 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node](https://img.shields.io/node/v/@hayashiii/pdfmint.svg)](https://nodejs.org)
 
-HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントファースト** な CLI ツール。AIエージェントが生成したHTMLを、コマンド一発でPDF化。
+HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントファースト** な CLI ツール。AIエージェントが生成した原稿を、提出・共有しやすいPDF/PNG成果物へコマンド一発で変換することを目的として設計。
 
-- 🤖 AIエージェント（Claude Code / Codex 等）が使う前提の構造化出力（`--json`）
-- 📝 HTML / Markdown 両対応
-- 🎨 日本語フォントを綺麗にレンダリング（Noto Sans JP 優先、Noto Serif JP も選択可）
-- 📦 Bun でも Node.js でも動く（`npm install -g` または `bun install -g`）
-- 🪶 Claude Code Skill 同梱（`/pdfmint` で呼び出し可能）
+- 📄 成果物はPDF + 任意のPNGファイルとして保存(DB不要)
+- 🤖 Claude Code / Codex などのAIエージェントから1コマンドで実行可能(Claude Code Skill同梱)
+- 📡 `--json` フラグで構造化出力 → エージェントが結果をパース可能
+- ⚙️ 構造化エラー(`code` + `hint`)と `--expect-pages` で自動リトライ・品質チェックがしやすい
+- 📝 HTML / Markdown / batch 変換に対応し、agent生成ドキュメントをまとめてPDF化できる
+- 🎨 日本語フォントを綺麗にレンダリング(Noto Sans JP 優先、Noto Serif JP も選択可)
+- 🔧 TypeScript で実装、Bun 開発 / Node.js 22+ 配布のハイブリッド構成
 
 ---
 
