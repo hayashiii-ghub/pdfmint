@@ -30,12 +30,11 @@ test("入力ファイルが存在しない場合 INPUT_NOT_FOUND をスロー", 
   })
 })
 
-test("出力先ディレクトリが存在しない場合 OUTPUT_DIR_NOT_FOUND をスロー", async () => {
-  await expect(
-    convertHtmlToPdf(join(FIXTURES, "sample.html"), "/nonexistent/dir/out.pdf", {})
-  ).rejects.toMatchObject({
-    code: "OUTPUT_DIR_NOT_FOUND",
-  })
+test("出力先ディレクトリが無い場合は自動作成して PDF を生成する", async () => {
+  const base = newTmpDir()
+  const out = join(base, "nested", "deep", "out.pdf")
+  await convertHtmlToPdf(join(FIXTURES, "sample.html"), out, {})
+  expect(existsSync(out)).toBe(true)
 })
 
 test("用紙サイズオプションが反映される", async () => {

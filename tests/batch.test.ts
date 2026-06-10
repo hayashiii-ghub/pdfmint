@@ -32,14 +32,17 @@ test("マッチするファイルがない場合 BATCH_NO_MATCHES をスロー",
   })
 })
 
-test("出力先ディレクトリが存在しない場合 OUTPUT_DIR_NOT_FOUND をスロー", async () => {
+test("出力先ディレクトリが無い場合は自動作成して batch 変換する", async () => {
   const inDir = newTmpDir()
+  const base = newTmpDir()
+  const outDir = join(base, "nested", "pdf")
   copyFileSync(join(FIXTURES, "sample.html"), join(inDir, "a.html"))
-  await expect(
-    convertBatch(`${inDir}/*.html`, "/nonexistent/dir", {})
-  ).rejects.toMatchObject({
-    code: "OUTPUT_DIR_NOT_FOUND",
-  })
+
+  const { results, errors, browser_reused } = await convertBatch(`${inDir}/*.html`, outDir, {})
+  expect(results).toHaveLength(1)
+  expect(errors).toHaveLength(0)
+  expect(browser_reused).toBe(true)
+  expect(existsSync(join(outDir, "a.pdf"))).toBe(true)
 })
 
 test("一部のファイルが失敗しても他は成功する（エラー集約）", async () => {

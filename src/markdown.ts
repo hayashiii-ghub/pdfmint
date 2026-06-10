@@ -1,9 +1,11 @@
 import { marked } from "marked"
+import { presetCss, type MarkdownPreset } from "./presets"
 
 export type MarkdownFontPreset = "sans" | "serif"
 
 export interface MarkdownOptions {
   font?: MarkdownFontPreset
+  preset?: MarkdownPreset
   customCss?: string
   cssPath?: string
 }
@@ -13,7 +15,8 @@ const FONT_STACKS: Record<MarkdownFontPreset, string> = {
   serif: `"Noto Serif JP", "Noto Serif CJK JP", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif`,
 }
 
-function defaultCss(font: MarkdownFontPreset): string {
+/** Legacy default CSS (--font sans without --preset). */
+function legacyDefaultCss(font: MarkdownFontPreset): string {
   return `
 @page { size: A4; margin: 20mm; }
 body {
@@ -38,10 +41,20 @@ blockquote { border-left: 4px solid #ddd; padding-left: 1em; color: #666; margin
 `
 }
 
+function resolveCss(options: MarkdownOptions): string {
+  if (options.customCss) return options.customCss
+  const font = options.font ?? "sans"
+  if (options.preset) {
+    const effectiveFont = options.preset === "letter" ? (options.font ?? "serif") : font
+    return presetCss(options.preset, effectiveFont)
+  }
+  return legacyDefaultCss(font)
+}
+
 export function markdownToHtml(md: string, options: MarkdownOptions | string = {}): string {
   const body = marked.parse(md, { async: false }) as string
   const resolvedOptions = typeof options === "string" ? { customCss: options } : options
-  const css = resolvedOptions.customCss ?? defaultCss(resolvedOptions.font ?? "sans")
+  const css = resolveCss(resolvedOptions)
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>

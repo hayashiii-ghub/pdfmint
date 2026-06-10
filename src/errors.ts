@@ -1,3 +1,5 @@
+import { recoveryFor } from "./error-recovery"
+
 export type ErrorCode =
   | "INPUT_NOT_FOUND"
   | "INPUT_NOT_READABLE"
@@ -11,6 +13,7 @@ export type ErrorCode =
   | "INVALID_OPTION"
   | "INVALID_VIEWPORT"
   | "INVALID_FONT"
+  | "INVALID_PRESET"
   | "PAGE_COUNT_MISMATCH"
   | "BATCH_NO_MATCHES"
 
@@ -42,6 +45,7 @@ export class PdfMintError extends Error {
       message: this.message,
       hint: this.hint,
       ...this.context,
+      ...recoveryFor(this.code),
     }
   }
 }

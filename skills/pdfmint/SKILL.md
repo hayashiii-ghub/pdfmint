@@ -9,20 +9,22 @@ description: HTML/Markdown を綺麗な日本語PDFやPNGに変換する CLI ツ
 
 - ユーザーが HTML/Markdown ファイルを PDF にしたいと言ったとき
 - ユーザーが HTML/Markdown から PNG と PDF の両方を作りたいと言ったとき
-- 請求書・契約書・履歴書のような書類をPDF化したいとき
+- Markdown をシンプルな書類（メモ・報告書・正式文）として PDF 化したいとき
 - 1ページ帳票でPDFが2ページに流れていないか検証したいとき
 - 複数HTMLを一括でPDFにしたいとき
+- Chromium 起動失敗時の環境診断が必要なとき
 
 ## How to invoke
 
-1. 入力がHTMLかMarkdownか確認（拡張子で判別）
-2. 出力先ディレクトリが存在することを確認（必要なら `mkdir -p`）
-3. PDFだけなら `pdfmint <input> <output> --json` を実行
-4. Markdown入力で明朝系にしたい場合は `--font serif` を付ける（既定は `--font sans`）
-5. Markdown入力で書体・余白・見出しを固定したい場合は `--css <file.css>` を付ける
-6. PNGも必要なら `--png <output.png> --viewport <width>x<height> --scale <number>` を付ける
-7. 1ページ固定が必要なら `--expect-pages 1` を付ける
-8. JSON出力を解析して結果を報告
+1. 初回または `BROWSER_LAUNCH_FAILED` 時は `pdfmint doctor --json`
+2. 入力がHTMLかMarkdownか確認（拡張子で判別）
+3. PDFだけなら `pdfmint <input> <output> --json` を実行（出力ディレクトリは自動作成）
+4. Markdown は用途に応じて `--preset memo|report|letter` を付ける
+5. 明朝系にしたい場合は `--font serif`（`letter` preset は既定で serif 寄り）
+6. 書体・余白を完全固定したい場合は `--css <file.css>`
+7. PNGも必要なら `--png <output.png> --viewport <width>x<height> --scale <number>`
+8. 1ページ固定が必要なら `--expect-pages 1`
+9. JSON出力を解析して結果を報告
 
 ## Examples
 
@@ -31,19 +33,11 @@ description: HTML/Markdown を綺麗な日本語PDFやPNGに変換する CLI ツ
 pdfmint invoice.html invoice.pdf --json
 ```
 
-### Markdown→PDF
+### Markdown→PDF（preset）
 ```bash
-pdfmint resume.md resume.pdf --json
-```
-
-### Markdown→PDF（明朝系）
-```bash
-pdfmint report.md report.pdf --font serif --json
-```
-
-### Markdown→PDF（CSS固定）
-```bash
-pdfmint report.md report.pdf --css report.css --json
+pdfmint memo.md memo.pdf --preset memo --json
+pdfmint report.md report.pdf --preset report --json
+pdfmint letter.md letter.pdf --preset letter --json
 ```
 
 ### HTML→PDF + PNG
@@ -58,19 +52,20 @@ pdfmint report.html report.pdf \
 
 ### バッチ処理
 ```bash
-mkdir -p ./pdf/
 pdfmint batch "./html/*.html" ./pdf/ --json
+```
+
+### 環境診断
+```bash
+pdfmint doctor --json
 ```
 
 ## Error recovery
 
-- `INPUT_NOT_FOUND`: ファイルパスを `ls` で確認、誤字や相対パスを訂正
-- `OUTPUT_DIR_NOT_FOUND`: 出力先を `mkdir -p` で先に作成
-- `PAGE_LOAD_FAILED`: HTML内の外部リソース（フォント・画像）がアクセス可能か確認
-- `BROWSER_LAUNCH_FAILED`: `bunx puppeteer browsers install chrome` を提案
-- `PNG_GENERATION_FAILED`: PNG出力先・viewport・scaleを確認
-- `INVALID_VIEWPORT`: `--viewport 1055x1491` のように `<width>x<height>` 形式へ修正
-- `INVALID_FONT`: `--font sans` または `--font serif` に修正
-- `PAGE_COUNT_MISMATCH`: `@page` / `@media print` / 高さ / overflow を確認
+- `BROWSER_LAUNCH_FAILED`: JSON の `next_command` を実行 → `pdfmint doctor --json`
+- `INPUT_NOT_FOUND`: ファイルパスを確認
+- `PAGE_LOAD_FAILED`: HTML内の外部リソース（フォント・画像）を確認
+- `INVALID_PRESET`: `--preset memo|report|letter`
+- `PAGE_COUNT_MISMATCH`: `@page` / 高さ / overflow を確認
 
 詳細は `AGENTS.md` を参照。

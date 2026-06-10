@@ -1,25 +1,35 @@
 import { convertHtmlToPdf, type ConvertOptions } from "./convert"
 import { convertBatch } from "./batch"
-import { formatSuccessSingle, formatSuccessBatch, formatError, type OutputFormat } from "./output"
+import { runDoctor } from "./doctor"
+import {
+  formatSuccessSingle,
+  formatSuccessBatch,
+  formatDoctor,
+  formatError,
+  type OutputFormat,
+} from "./output"
 import { getVersion } from "./version"
 import { PdfMintError } from "./errors"
 import type { MarkdownFontPreset } from "./markdown"
+import { MARKDOWN_PRESETS, type MarkdownPreset } from "./presets"
 
 const HELP = `pdfmint - HTML/Markdown → PDF converter (AI-friendly CLI)
 
 Usage:
   pdfmint <input> <output>              Convert single file (HTML or Markdown)
-  pdfmint batch <pattern> <out-dir>     Batch convert
+  pdfmint batch <pattern> <out-dir>     Batch convert (reuses one Chromium session)
+  pdfmint doctor                        Run environment diagnostics
   pdfmint help                          Show this help
   pdfmint --version                     Show version
 
-Flags (apply to all commands):
+Flags (apply to convert / batch):
   --json                                Output JSON to stdout (for AI agents)
   --format <A4|A3|Letter|Legal>         Paper size (default: A4)
   --margin <value>                      Margin (e.g., 10mm; default: 0)
   --landscape                           Landscape orientation
   --no-background                       Disable CSS backgrounds
-  --font <sans|serif>                   Markdown default Japanese font preset (default: sans)
+  --font <sans|serif>                   Markdown font preset (default: sans)
+  --preset <memo|report|letter>         Markdown document preset (default: legacy sans CSS)
   --css <file.css>                      Custom CSS file for Markdown input
   --png <output.png>                    Also render a PNG screenshot (single conversion only)
   --viewport <width>x<height>           PNG viewport (default: 1055x1491; with --png)
@@ -28,9 +38,11 @@ Flags (apply to all commands):
 
 Examples:
   pdfmint invoice.html invoice.pdf
-  pdfmint resume.md resume.pdf --format A4
+  pdfmint memo.md memo.pdf --preset memo --json
+  pdfmint report.md report.pdf --preset report --font serif
   pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3
   pdfmint batch "./html/*.html" ./pdf/ --json
+  pdfmint doctor --json
 
 Docs:
   AGENTS.md  - AI agent guide
@@ -43,6 +55,7 @@ interface ParsedArgs {
   format?: string
   margin?: string
   font?: string
+  preset?: string
   css?: string
   landscape: boolean
   noBackground: boolean
@@ -59,6 +72,7 @@ const VALUE_FLAGS = {
   "--format": "format",
   "--margin": "margin",
   "--font": "font",
+  "--preset": "preset",
   "--css": "css",
   "--png": "png",
   "--viewport": "viewport",
@@ -175,6 +189,19 @@ function parseFontPreset(value: string | undefined): MarkdownFontPreset | undefi
   )
 }
 
+function parseMarkdownPreset(value: string | undefined): MarkdownPreset | undefined {
+  if (!value) return undefined
+  if ((MARKDOWN_PRESETS as readonly string[]).includes(value)) {
+    return value as MarkdownPreset
+  }
+  throw new PdfMintError(
+    "INVALID_PRESET",
+    `preset が不正です: ${value}`,
+    `--preset には ${MARKDOWN_PRESETS.join(", ")} を指定してください。`,
+    {}
+  )
+}
+
 function parseFormat(value: string | undefined): ConvertOptions["format"] | undefined {
   if (!value) return undefined
   if (PAPER_FORMATS.has(value)) return value as ConvertOptions["format"]
@@ -189,6 +216,7 @@ function buildOptions(args: ParsedArgs): ConvertOptions {
   if (args.format) opts.format = parseFormat(args.format)
   if (args.margin) opts.margin = args.margin
   if (args.font) opts.font = parseFontPreset(args.font)
+  if (args.preset) opts.preset = parseMarkdownPreset(args.preset)
   if (args.css) opts.css = args.css
   if (args.landscape) opts.landscape = true
   if (args.noBackground) opts.noBackground = true
@@ -231,6 +259,24 @@ async function main(argv: string[]): Promise<number> {
       return 2
     }
 
+    if (args.positional[0] === "doctor") {
+      if (args.positional.length > 1) {
+        throw invalidOption(
+          `doctor コマンドに余分な引数があります: ${args.positional.slice(1).join(" ")}`,
+          "doctor は pdfmint doctor の形式で指定してください。"
+        )
+      }
+      if (args.png || args.preset || args.css || args.format || args.margin) {
+        throw invalidOption(
+          "doctor コマンドでは変換用オプションは利用できません",
+          "pdfmint doctor --json"
+        )
+      }
+      const result = await runDoctor()
+      console.log(formatDoctor(result, fmt))
+      return result.success ? 0 : 1
+    }
+
     if (args.positional[0] === "batch") {
       if (args.png || args.viewport || args.scale) {
         throw new PdfMintError(
@@ -251,12 +297,11 @@ async function main(argv: string[]): Promise<number> {
         console.log(HELP)
         return 2
       }
-      const { results, errors } = await convertBatch(pattern, outDir, buildOptions(args))
-      console.log(formatSuccessBatch(results, errors, fmt))
+      const { results, errors, browser_reused } = await convertBatch(pattern, outDir, buildOptions(args))
+      console.log(formatSuccessBatch(results, errors, fmt, { browser_reused }))
       return errors.length > 0 ? 1 : 0
     }
 
-    // 単一変換
     if (args.positional.length < 2) {
       console.log(HELP)
       return 2

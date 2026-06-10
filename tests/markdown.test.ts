@@ -33,3 +33,13 @@ test("テーブルが正しく変換される", () => {
   expect(html).toContain("<table>")
   expect(html).toContain("<th>A</th>")
 })
+
+test("report preset は左ボーダー付き h2 スタイルを含む", () => {
+  const html = markdownToHtml("# テスト", { preset: "report" })
+  expect(html).toContain("border-left: 4px solid #4a6741")
+})
+
+test("letter preset は中央寄せ h1 を含む", () => {
+  const html = markdownToHtml("# テスト", { preset: "letter" })
+  expect(html).toContain("text-align: center")
+})

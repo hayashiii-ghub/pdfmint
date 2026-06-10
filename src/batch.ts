@@ -1,6 +1,7 @@
-import { existsSync } from "node:fs"
+import { mkdirSync } from "node:fs"
 import { basename, extname, join, resolve } from "node:path"
 import { glob } from "glob"
+import { BrowserSession } from "./browser-session"
 import { convertHtmlToPdf, type ConvertOptions, type ConvertResult } from "./convert"
 import { PdfMintError } from "./errors"
 import type { BatchErrorEntry } from "./output"
@@ -8,6 +9,7 @@ import type { BatchErrorEntry } from "./output"
 export interface BatchResult {
   results: ConvertResult[]
   errors: BatchErrorEntry[]
+  browser_reused: boolean
 }
 
 export async function convertBatch(
@@ -16,16 +18,8 @@ export async function convertBatch(
   options: ConvertOptions
 ): Promise<BatchResult> {
   const outDirAbs = resolve(outDir)
-  if (!existsSync(outDirAbs)) {
-    throw new PdfMintError(
-      "OUTPUT_DIR_NOT_FOUND",
-      `出力先ディレクトリが存在しません: ${outDir}`,
-      "出力先ディレクトリを事前に作成してください（mkdir -p）。",
-      { output: outDir, pattern }
-    )
-  }
+  mkdirSync(outDirAbs, { recursive: true })
 
-  // glob展開（npm の glob パッケージ、Node互換）
   const matches = await glob(pattern, { absolute: true })
 
   if (matches.length === 0) {
@@ -39,25 +33,31 @@ export async function convertBatch(
 
   const results: ConvertResult[] = []
   const errors: BatchErrorEntry[] = []
+  const session = new BrowserSession()
 
-  for (const input of matches) {
-    const base = basename(input, extname(input))
-    const output = join(outDirAbs, `${base}.pdf`)
-    try {
-      const r = await convertHtmlToPdf(input, output, options)
-      results.push(r)
-    } catch (err) {
-      if (err instanceof PdfMintError) {
-        errors.push({ input, code: err.code, message: err.message })
-      } else {
-        errors.push({
-          input,
-          code: "PDF_GENERATION_FAILED",
-          message: (err as Error).message,
-        })
+  try {
+    await session.launch()
+    for (const input of matches) {
+      const base = basename(input, extname(input))
+      const output = join(outDirAbs, `${base}.pdf`)
+      try {
+        const r = await convertHtmlToPdf(input, output, options, session)
+        results.push(r)
+      } catch (err) {
+        if (err instanceof PdfMintError) {
+          errors.push({ input, code: err.code, message: err.message })
+        } else {
+          errors.push({
+            input,
+            code: "PDF_GENERATION_FAILED",
+            message: (err as Error).message,
+          })
+        }
       }
     }
+  } finally {
+    await session.close()
   }
 
-  return { results, errors }
+  return { results, errors, browser_reused: true }
 }
