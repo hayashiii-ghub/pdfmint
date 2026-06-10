@@ -19,7 +19,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\" --external puppeteer --external marked --external glob && cp -r src/presets dist/presets",
+    "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\" --external puppeteer --external marked --external glob && rm -rf dist/presets && cp -r src/presets dist/presets",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "pack:smoke": "bun scripts/pack-smoke.ts",
