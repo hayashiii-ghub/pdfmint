@@ -7,7 +7,18 @@
 
 ## [Unreleased]
 
+### Added
+- `pdfmint doctor` コマンド（Node / Chromium / サンプル変換の診断、`--json` 対応）
+- Markdown 向け `--preset memo|report|letter`（シンプルな書類スタイル）
+- エラー JSON に `next_command` / `verify_command`（エージェント自動復旧向け）
+- 変換結果 JSON に `timing`（`browser_launch_ms`, `goto_ms`, `pdf_ms`, `png_ms`）
+- batch 結果 JSON に `browser_reused: true`
+
 ### Changed
+- batch 変換で Chromium セッションを再利用（起動コストを1回に集約）
+- 出力ディレクトリを自動作成（`mkdir -p` 相当）
+- ローカル `file://` HTML の読み込みを `domcontentloaded` に変更（待ち時間短縮）
+- システム Google Chrome（`channel: chrome`）を優先起動、`PUPPETEER_EXECUTABLE_PATH` もサポート
 - README と package description の導入説明を、成果物・AIエージェント連携・品質チェックが伝わる内容に更新
 
 ## [0.2.2] - 2026-06-05

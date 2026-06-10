@@ -1,5 +1,6 @@
-import puppeteer from "puppeteer"
 import { readFileSync, statSync } from "node:fs"
+import type { Browser } from "puppeteer"
+import { BrowserSession } from "./browser-session"
 import { PdfMintError } from "./errors"
 
 export interface PdfRenderOptions {
@@ -24,6 +25,13 @@ export interface ArtifactRenderOptions {
   png?: PngRenderOptions
 }
 
+export interface RenderTiming {
+  browser_launch_ms: number
+  goto_ms: number
+  pdf_ms: number
+  png_ms?: number
+}
+
 export interface PdfArtifact {
   output: string
   size_bytes: number
@@ -40,6 +48,7 @@ export interface PngArtifact {
 export interface ArtifactRenderResult {
   pdf: PdfArtifact
   png?: PngArtifact
+  timing: RenderTiming
 }
 
 export function countPdfPages(pdfPath: string): number {
@@ -47,26 +56,19 @@ export function countPdfPages(pdfPath: string): number {
   return [...data.toString("latin1").matchAll(/\/Type\s*\/Page\b/g)].length
 }
 
-export async function renderArtifacts(
+async function renderOnPage(
+  browser: Browser,
   renderPath: string,
   options: ArtifactRenderOptions
 ): Promise<ArtifactRenderResult> {
-  let browser
-  try {
-    browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    })
-  } catch (err) {
-    throw new PdfMintError(
-      "BROWSER_LAUNCH_FAILED",
-      `Chromium の起動に失敗しました: ${(err as Error).message}`,
-      "puppeteer の Chromium ダウンロードを再実行してください: bunx puppeteer browsers install chrome",
-      {}
-    )
+  const timing: RenderTiming = {
+    browser_launch_ms: 0,
+    goto_ms: 0,
+    pdf_ms: 0,
   }
 
+  const page = await browser.newPage()
   try {
-    const page = await browser.newPage()
     if (options.png) {
       await page.setViewport({
         width: options.png.width,
@@ -75,8 +77,9 @@ export async function renderArtifacts(
       })
     }
 
+    const gotoStart = Date.now()
     try {
-      await page.goto(`file://${renderPath}`, { waitUntil: "networkidle0" })
+      await page.goto(`file://${renderPath}`, { waitUntil: "domcontentloaded" })
     } catch (err) {
       throw new PdfMintError(
         "PAGE_LOAD_FAILED",
@@ -85,7 +88,9 @@ export async function renderArtifacts(
         { input: options.input }
       )
     }
+    timing.goto_ms = Date.now() - gotoStart
 
+    const pdfStart = Date.now()
     try {
       await page.pdf({
         path: options.pdf.output,
@@ -107,6 +112,7 @@ export async function renderArtifacts(
         { output: options.pdf.output }
       )
     }
+    timing.pdf_ms = Date.now() - pdfStart
 
     const pageCount = countPdfPages(options.pdf.output)
     if (options.pdf.expectPages !== undefined && pageCount !== options.pdf.expectPages) {
@@ -124,6 +130,7 @@ export async function renderArtifacts(
 
     let png: PngArtifact | undefined
     if (options.png) {
+      const pngStart = Date.now()
       try {
         await page.screenshot({
           path: options.png.output,
@@ -137,6 +144,7 @@ export async function renderArtifacts(
           { output: options.png.output }
         )
       }
+      timing.png_ms = Date.now() - pngStart
       png = {
         output: options.png.output,
         width: Math.round(options.png.width * options.png.scale),
@@ -152,8 +160,27 @@ export async function renderArtifacts(
         page_count: pageCount,
       },
       ...(png ? { png } : {}),
+      timing,
     }
   } finally {
-    await browser.close()
+    await page.close()
+  }
+}
+
+export async function renderArtifacts(
+  renderPath: string,
+  options: ArtifactRenderOptions,
+  session?: BrowserSession
+): Promise<ArtifactRenderResult> {
+  const ownsSession = !session
+  const activeSession = session ?? new BrowserSession()
+
+  try {
+    await activeSession.launch()
+    const result = await renderOnPage(await activeSession.getBrowser(), renderPath, options)
+    result.timing.browser_launch_ms = ownsSession ? activeSession.launchDurationMs : 0
+    return result
+  } finally {
+    if (ownsSession) await activeSession.close()
   }
 }

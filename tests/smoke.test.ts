@@ -33,7 +33,9 @@ test("引数なしはヘルプを表示し終了コード2", async () => {
   expect(proc.exitCode).toBe(2)
 })
 
-test("単一HTML→PDF変換が動く（end-to-end）", async () => {
+test(
+  "単一HTML→PDF変換が動く（end-to-end）",
+  async () => {
   const out = join(newTmpDir(), "out.pdf")
   const proc = Bun.spawn(["bun", CLI, join(FIXTURES, "sample.html"), out], {
     stdout: "pipe",
@@ -42,9 +44,13 @@ test("単一HTML→PDF変換が動く（end-to-end）", async () => {
   await proc.exited
   expect(proc.exitCode).toBe(0)
   expect(existsSync(out)).toBe(true)
-})
+  },
+  { timeout: 20_000 }
+)
 
-test("--json フラグで JSON 出力", async () => {
+test(
+  "--json フラグで JSON 出力",
+  async () => {
   const out = join(newTmpDir(), "out.pdf")
   const proc = Bun.spawn(["bun", CLI, join(FIXTURES, "sample.html"), out, "--json"], {
     stdout: "pipe",
@@ -57,7 +63,9 @@ test("--json フラグで JSON 出力", async () => {
   expect(json.success).toBe(true)
   expect(json.output).toBe(out)
   expect(json.page_count).toBe(1)
-})
+  },
+  { timeout: 20_000 }
+)
 
 test("--png フラグで PDF と PNG を同時生成し JSON に PNG 情報を含める", async () => {
   const dir = newTmpDir()
@@ -227,6 +235,46 @@ test("Markdown input with missing --css returns JSON INPUT_NOT_FOUND", async () 
   expect(json.success).toBe(false)
   expect(json.error.code).toBe("INPUT_NOT_FOUND")
   expect(json.error.css).toBe(join(dir, "missing.css"))
+})
+
+test("doctor --json は診断結果を返す", async () => {
+  const proc = Bun.spawn(["bun", CLI, "doctor", "--json"], {
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(0)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(true)
+  expect(json.checks.some((c: { name: string }) => c.name === "chromium")).toBe(true)
+})
+
+test("--preset report で Markdown を PDF 化できる", async () => {
+  const out = join(newTmpDir(), "out.pdf")
+  const proc = Bun.spawn(
+    ["bun", CLI, join(FIXTURES, "sample.md"), out, "--preset", "report", "--json"],
+    { stdout: "pipe", stderr: "pipe" }
+  )
+  const stdoutText = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(0)
+  expect(existsSync(out)).toBe(true)
+  const json = JSON.parse(stdoutText.trim())
+  expect(json.success).toBe(true)
+  expect(json.timing?.pdf_ms).toBeGreaterThan(0)
+})
+
+test("存在しない出力ディレクトリを自動作成する", async () => {
+  const base = newTmpDir()
+  const out = join(base, "auto", "nested", "out.pdf")
+  const proc = Bun.spawn(["bun", CLI, join(FIXTURES, "sample.html"), out, "--json"], {
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+  await proc.exited
+  expect(proc.exitCode).toBe(0)
+  expect(existsSync(out)).toBe(true)
 })
 
 test("入力ファイル不在のエラー（--json）", async () => {

@@ -1,5 +1,6 @@
 import { PdfMintError, type ErrorCode } from "./errors"
 import type { ConvertResult } from "./convert"
+import type { DoctorResult } from "./doctor"
 
 export type OutputFormat = "json" | "text"
 
@@ -31,7 +32,8 @@ export function formatSuccessSingle(result: ConvertResult, format: OutputFormat)
 export function formatSuccessBatch(
   results: ConvertResult[],
   errors: BatchErrorEntry[],
-  format: OutputFormat
+  format: OutputFormat,
+  meta: { browser_reused?: boolean } = {}
 ): string {
   const total = results.length + errors.length
   const succeeded = results.length
@@ -43,6 +45,7 @@ export function formatSuccessBatch(
       total,
       succeeded,
       failed,
+      ...meta,
       results,
       errors,
     })
@@ -51,6 +54,25 @@ export function formatSuccessBatch(
     `Batch complete: ${succeeded}/${total} succeeded`,
     ...results.map((r) => `  ✓ ${r.output} (${(r.size_bytes / 1024).toFixed(1)}KB)`),
     ...errors.map((e) => `  ✗ ${e.input}: [${e.code}] ${e.message}`),
+  ]
+  return lines.join("\n")
+}
+
+export function formatDoctor(result: DoctorResult, format: OutputFormat): string {
+  if (format === "json") {
+    return JSON.stringify({
+      success: result.success,
+      checks: result.checks,
+      duration_ms: result.duration_ms,
+    })
+  }
+  const lines = [
+    result.success ? "Doctor: all checks passed" : "Doctor: issues found",
+    ...result.checks.map((c) => {
+      const icon = c.status === "ok" ? "✓" : c.status === "warn" ? "!" : "✗"
+      const cmd = c.next_command ? ` → ${c.next_command}` : ""
+      return `  ${icon} ${c.name}: ${c.message}${cmd}`
+    }),
   ]
   return lines.join("\n")
 }

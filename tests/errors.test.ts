@@ -34,11 +34,13 @@ test("PdfMintError.toJSON() は構造化データを返す", () => {
   })
 })
 
-test("context が空の場合 toJSON に余計なキーは含まれない", () => {
+test("BROWSER_LAUNCH_FAILED は next_command と verify_command を含む", () => {
   const err = new PdfMintError("BROWSER_LAUNCH_FAILED", "msg", "hint")
   expect(err.toJSON()).toEqual({
     code: "BROWSER_LAUNCH_FAILED",
     message: "msg",
     hint: "hint",
+    next_command: "npx puppeteer browsers install chrome",
+    verify_command: "pdfmint doctor --json",
   })
 })

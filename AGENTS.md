@@ -14,7 +14,8 @@
 
 ```bash
 pdfmint <input> <output>              # Single file
-pdfmint batch <glob> <out-dir>        # Batch
+pdfmint batch <glob> <out-dir>        # Batch (reuses one Chromium session)
+pdfmint doctor                        # Environment diagnostics
 pdfmint help                          # Help
 pdfmint --version                     # Version
 ```
@@ -27,20 +28,33 @@ Always pass `--json` when invoked by an agent for structured output.
 - `.md` / `.markdown` → converted to HTML internally with default Japanese-friendly CSS, then to PDF
 - Other extensions → error `UNSUPPORTED_INPUT`
 
-## Markdown font presets
+## Markdown presets
 
-Markdown input can choose the default Japanese font preset:
+Markdown input supports document presets and font overrides:
 
 ```bash
-pdfmint report.md report.pdf --font sans --json
+pdfmint memo.md memo.pdf --preset memo --json
+pdfmint report.md report.pdf --preset report --json
+pdfmint letter.md letter.pdf --preset letter --json
 pdfmint report.md report.pdf --font serif --json
 pdfmint report.md report.pdf --css report.css --json
 ```
 
-- `--font sans` is the default and prioritizes Noto Sans JP.
+- `--preset memo|report|letter` applies a simple Japanese document stylesheet.
+- `--font sans` is the default and prioritizes Noto Sans JP (`letter` defaults to serif unless overridden).
 - `--font serif` prioritizes Noto Serif JP for more formal reports.
-- `--css <file.css>` replaces the default Markdown CSS with a file, useful for `@font-face`, margins, and report-specific typography.
+- `--css <file.css>` replaces the preset/default Markdown CSS with a file.
 - HTML input is not modified; set fonts in the HTML `<style>` block.
+
+## Doctor
+
+Run before first use or when Chromium fails:
+
+```bash
+pdfmint doctor --json
+```
+
+Returns structured checks for Node.js, Chromium launch, and a sample HTML→PDF conversion.
 
 ## PNG and page-count validation
 
@@ -108,9 +122,10 @@ pdfmint report.html report.pdf \
 | `INPUT_NOT_FOUND` | Verify path; try `ls` to check |
 | `INPUT_NOT_READABLE` | Check file permissions |
 | `UNSUPPORTED_INPUT` | Use `.html`, `.htm`, `.md`, or `.markdown` |
-| `OUTPUT_DIR_NOT_FOUND` | Run `mkdir -p <dir>` first |
+| `OUTPUT_DIR_NOT_FOUND` | Rare after auto-create; check parent path permissions |
 | `OUTPUT_NOT_WRITABLE` | Check directory permissions |
-| `BROWSER_LAUNCH_FAILED` | Run `bunx puppeteer browsers install chrome` |
+| `BROWSER_LAUNCH_FAILED` | Run `error.next_command` (usually `npx puppeteer browsers install chrome`), then `pdfmint doctor --json` |
+| `INVALID_PRESET` | Use `--preset memo`, `report`, or `letter` |
 | `PAGE_LOAD_FAILED` | Check HTML for broken external resources (fonts, images) |
 | `PDF_GENERATION_FAILED` | Check output path / disk space |
 | `PNG_GENERATION_FAILED` | Check viewport, scale, output path, and disk space |
@@ -134,9 +149,9 @@ pdfmint report.html report.pdf \
 
 ### Batch convert reports
 1. Place all HTML in `./reports/`
-2. `mkdir -p ./pdf/`
-3. `pdfmint batch "./reports/*.html" ./pdf/ --json`
-4. Parse `errors` array; retry failed entries individually
+2. `pdfmint batch "./reports/*.html" ./pdf/ --json` (output dir is auto-created)
+3. Parse `errors` array; retry failed entries individually
+4. JSON includes `browser_reused: true` when one Chromium session handled all files
 
 ### Generate one-page visual report artifacts
 1. Write the final report as a single HTML file with screen CSS and `@media print`
