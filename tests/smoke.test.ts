@@ -5,6 +5,8 @@ import { join } from "node:path"
 
 const FIXTURES = join(import.meta.dir, "fixtures")
 const CLI = join(import.meta.dir, "..", "src", "cli.ts")
+/** CI の初回 Chromium 起動は 20s を超えることがある */
+const BROWSER_SMOKE_TIMEOUT_MS = 45_000
 
 function newTmpDir() {
   return mkdtempSync(join(tmpdir(), "pdfmint-smoke-"))
@@ -49,7 +51,7 @@ test(
     expect(json.success).toBe(true)
     expect(json.output).toBe(out)
   },
-  { timeout: 20_000 }
+  { timeout: BROWSER_SMOKE_TIMEOUT_MS }
 )
 
 test("convert の引数不足はヘルプを表示し終了コード2", async () => {
@@ -72,7 +74,7 @@ test(
   expect(proc.exitCode).toBe(0)
   expect(existsSync(out)).toBe(true)
   },
-  { timeout: 20_000 }
+  { timeout: BROWSER_SMOKE_TIMEOUT_MS }
 )
 
 test(
@@ -91,7 +93,7 @@ test(
   expect(json.output).toBe(out)
   expect(json.page_count).toBe(1)
   },
-  { timeout: 20_000 }
+  { timeout: BROWSER_SMOKE_TIMEOUT_MS }
 )
 
 test("--png フラグで PDF と PNG を同時生成し JSON に PNG 情報を含める", async () => {
