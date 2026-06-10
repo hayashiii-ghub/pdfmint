@@ -1,3 +1,4 @@
+/** verify 層: エラーコードごとのエージェント向け復旧コマンドを返す。 */
 import type { ErrorCode } from "./errors"
 
 export interface ErrorRecovery {

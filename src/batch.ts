@@ -1,3 +1,4 @@
+/** batch オーケストレーション: 1 Chromium セッションで複数ファイルを変換する。 */
 import { mkdirSync } from "node:fs"
 import { basename, extname, join, resolve } from "node:path"
 import { glob } from "glob"

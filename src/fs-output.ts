@@ -1,3 +1,4 @@
+/** prepare 層: 出力ファイルの親ディレクトリを idempotent に作成する。 */
 import { mkdirSync } from "node:fs"
 import { dirname } from "node:path"
 

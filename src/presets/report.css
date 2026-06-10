@@ -1,0 +1,6 @@
+@page { size: A4; margin: 18mm; }
+h1, h2, h3, h4 { color: #1a1a1a; margin-top: 1.6em; }
+h1 { font-size: 20pt; border-bottom: 2px solid #333; padding-bottom: 0.2em; }
+h2 { font-size: 16pt; border-left: 4px solid #4a6741; padding-left: 0.5em; }
+h3 { font-size: 14pt; }
+blockquote { border-left: 4px solid #4a6741; padding-left: 1em; color: #444; margin: 1em 0; }

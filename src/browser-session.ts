@@ -1,3 +1,4 @@
+/** render 層: Chromium セッションの起動・再利用・終了を管理する。 */
 import puppeteer, { type Browser } from "puppeteer"
 import { PdfMintError } from "./errors"
 

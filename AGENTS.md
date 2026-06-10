@@ -13,12 +13,15 @@
 ## Quick Reference
 
 ```bash
-pdfmint <input> <output>              # Single file
+pdfmint convert <input> <output>      # Single file (preferred)
+pdfmint <input> <output>              # Same as convert (legacy alias)
 pdfmint batch <glob> <out-dir>        # Batch (reuses one Chromium session)
 pdfmint doctor                        # Environment diagnostics
 pdfmint help                          # Help
 pdfmint --version                     # Version
 ```
+
+Troubleshooting: `docs/troubleshooting.md`
 
 Always pass `--json` when invoked by an agent for structured output.
 
@@ -158,6 +161,19 @@ pdfmint report.html report.pdf \
 2. Run `pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3 --expect-pages 1 --json`
 3. Parse `page_count` and `png` in the JSON result
 4. Report both output paths to the user
+
+## Change → test matrix
+
+| Change area | Verify with |
+|---|---|
+| CLI routing / flags | `bun test tests/smoke.test.ts` |
+| Single convert / PNG / presets | `bun test tests/convert.test.ts tests/smoke.test.ts` |
+| Markdown CSS / presets | `bun test tests/markdown.test.ts` |
+| Batch reuse | `bun test tests/batch.test.ts` |
+| Error JSON / recovery | `bun test tests/errors.test.ts` |
+| Doctor | `pdfmint doctor --json` |
+| npm package contents | `bun run pack:smoke` |
+| Full regression | `bun test && bun run typecheck && bun run build` |
 
 ## Best practices for AI agents
 

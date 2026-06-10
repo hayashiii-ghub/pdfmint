@@ -1,5 +1,6 @@
+/** prepare 層: Markdown を preset/legacy CSS 付き HTML に変換する。 */
 import { marked } from "marked"
-import { presetCss, type MarkdownPreset } from "./presets"
+import { presetCss, type MarkdownPreset } from "./presets/index"
 
 export type MarkdownFontPreset = "sans" | "serif"
 

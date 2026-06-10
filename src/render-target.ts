@@ -1,9 +1,10 @@
+/** prepare 層: 入力パスを Chromium が読める renderPath に正規化する。 */
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { extname, join, resolve } from "node:path"
 import { tmpdir } from "node:os"
 import { PdfMintError } from "./errors"
 import { markdownToHtml, type MarkdownFontPreset } from "./markdown"
-import type { MarkdownPreset } from "./presets"
+import type { MarkdownPreset } from "./presets/index"
 
 export interface RenderTargetMarkdownOptions {
   font?: MarkdownFontPreset
