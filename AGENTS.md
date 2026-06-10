@@ -21,7 +21,8 @@ pdfmint help                          # Help
 pdfmint --version                     # Version
 ```
 
-Troubleshooting: `docs/troubleshooting.md`
+Troubleshooting: `docs/troubleshooting.md`  
+Release / branch / tag policy: `docs/RELEASE.md`
 
 Always pass `--json` when invoked by an agent for structured output.
 
