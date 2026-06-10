@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-10
+
 ### Added
 - `pdfmint convert` サブコマンド（`pdfmint <input> <output>` は互換 alias として維持）
 - `docs/troubleshooting.md`（環境診断・復旧手順）
