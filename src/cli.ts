@@ -1,3 +1,4 @@
+/** CLI エントリ: convert / batch / doctor サブコマンドとレガシー位置引数をルーティングする。 */
 import { convertHtmlToPdf, type ConvertOptions } from "./convert"
 import { convertBatch } from "./batch"
 import { runDoctor } from "./doctor"
@@ -11,12 +12,13 @@ import {
 import { getVersion } from "./version"
 import { PdfMintError } from "./errors"
 import type { MarkdownFontPreset } from "./markdown"
-import { MARKDOWN_PRESETS, type MarkdownPreset } from "./presets"
+import { MARKDOWN_PRESETS, type MarkdownPreset } from "./presets/index"
 
 const HELP = `pdfmint - HTML/Markdown → PDF converter (AI-friendly CLI)
 
 Usage:
-  pdfmint <input> <output>              Convert single file (HTML or Markdown)
+  pdfmint convert <input> <output>      Convert single file (HTML or Markdown)
+  pdfmint <input> <output>              Same as convert (legacy alias)
   pdfmint batch <pattern> <out-dir>     Batch convert (reuses one Chromium session)
   pdfmint doctor                        Run environment diagnostics
   pdfmint help                          Show this help
@@ -37,7 +39,7 @@ Flags (apply to convert / batch):
   --expect-pages <number>               Fail if generated PDF page count differs
 
 Examples:
-  pdfmint invoice.html invoice.pdf
+  pdfmint convert invoice.html invoice.pdf
   pdfmint memo.md memo.pdf --preset memo --json
   pdfmint report.md report.pdf --preset report --font serif
   pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3
@@ -239,6 +241,40 @@ function buildOptions(args: ParsedArgs): ConvertOptions {
   return opts
 }
 
+async function runSingleConvert(
+  input: string,
+  output: string,
+  args: ParsedArgs,
+  fmt: OutputFormat
+): Promise<number> {
+  const result = await convertHtmlToPdf(input, output, buildOptions(args))
+  console.log(formatSuccessSingle(result, fmt))
+  return 0
+}
+
+function parseConvertArgs(
+  positional: string[],
+  command: "convert" | "legacy"
+): { input: string; output: string } {
+  const offset = command === "convert" ? 1 : 0
+  const input = positional[offset]
+  const output = positional[offset + 1]
+  const extra = positional.slice(offset + 2)
+
+  if (!input || !output) {
+    throw new Error("SHOW_HELP")
+  }
+  if (extra.length > 0) {
+    throw invalidOption(
+      `単一変換の引数が多すぎます: ${extra.join(" ")}`,
+      command === "convert"
+        ? "単一変換は pdfmint convert <input> <output> の形式で指定してください。"
+        : "単一変換は pdfmint <input> <output> の形式で指定してください。"
+    )
+  }
+  return { input, output }
+}
+
 async function main(argv: string[]): Promise<number> {
   let fmt: OutputFormat = argv.includes("--json") ? "json" : "text"
 
@@ -302,20 +338,26 @@ async function main(argv: string[]): Promise<number> {
       return errors.length > 0 ? 1 : 0
     }
 
+    if (args.positional[0] === "convert") {
+      try {
+        const { input, output } = parseConvertArgs(args.positional, "convert")
+        return await runSingleConvert(input, output, args, fmt)
+      } catch (err) {
+        if (err instanceof Error && err.message === "SHOW_HELP") {
+          console.log(HELP)
+          return 2
+        }
+        throw err
+      }
+    }
+
     if (args.positional.length < 2) {
       console.log(HELP)
       return 2
     }
-    if (args.positional.length > 2) {
-      throw invalidOption(
-        `単一変換の引数が多すぎます: ${args.positional.slice(2).join(" ")}`,
-        "単一変換は pdfmint <input> <output> の形式で指定してください。"
-      )
-    }
-    const [input, output] = args.positional
-    const result = await convertHtmlToPdf(input!, output!, buildOptions(args))
-    console.log(formatSuccessSingle(result, fmt))
-    return 0
+
+    const { input, output } = parseConvertArgs(args.positional, "legacy")
+    return await runSingleConvert(input, output, args, fmt)
   } catch (err) {
     console.log(formatError(err, fmt))
     return 1

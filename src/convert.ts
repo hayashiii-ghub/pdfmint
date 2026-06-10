@@ -1,10 +1,11 @@
+/** prepare → render のオーケストレーション: 単一ファイル変換のエントリ。 */
 import { resolve } from "node:path"
 import type { BrowserSession } from "./browser-session"
 import { ensureOutputPath } from "./fs-output"
 import { prepareRenderTarget } from "./render-target"
 import { renderArtifacts, type PngArtifact, type RenderTiming } from "./render"
 import type { MarkdownFontPreset } from "./markdown"
-import type { MarkdownPreset } from "./presets"
+import type { MarkdownPreset } from "./presets/index"
 
 export interface PngOptions {
   output: string

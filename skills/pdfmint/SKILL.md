@@ -18,7 +18,7 @@ description: HTML/Markdown を綺麗な日本語PDFやPNGに変換する CLI ツ
 
 1. 初回または `BROWSER_LAUNCH_FAILED` 時は `pdfmint doctor --json`
 2. 入力がHTMLかMarkdownか確認（拡張子で判別）
-3. PDFだけなら `pdfmint <input> <output> --json` を実行（出力ディレクトリは自動作成）
+3. PDFだけなら `pdfmint convert <input> <output> --json` を実行（`pdfmint <in> <out>` も可。出力ディレクトリは自動作成）
 4. Markdown は用途に応じて `--preset memo|report|letter` を付ける
 5. 明朝系にしたい場合は `--font serif`（`letter` preset は既定で serif 寄り）
 6. 書体・余白を完全固定したい場合は `--css <file.css>`
@@ -30,7 +30,7 @@ description: HTML/Markdown を綺麗な日本語PDFやPNGに変換する CLI ツ
 
 ### 単一HTML→PDF
 ```bash
-pdfmint invoice.html invoice.pdf --json
+pdfmint convert invoice.html invoice.pdf --json
 ```
 
 ### Markdown→PDF（preset）

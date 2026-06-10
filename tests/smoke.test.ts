@@ -5,6 +5,8 @@ import { join } from "node:path"
 
 const FIXTURES = join(import.meta.dir, "fixtures")
 const CLI = join(import.meta.dir, "..", "src", "cli.ts")
+/** CI の初回 Chromium 起動は 20s を超えることがある */
+const BROWSER_SMOKE_TIMEOUT_MS = 45_000
 
 function newTmpDir() {
   return mkdtempSync(join(tmpdir(), "pdfmint-smoke-"))
@@ -34,6 +36,33 @@ test("引数なしはヘルプを表示し終了コード2", async () => {
 })
 
 test(
+  "convert サブコマンドで HTML→PDF 変換が動く",
+  async () => {
+    const out = join(newTmpDir(), "convert-out.pdf")
+    const proc = Bun.spawn(
+      ["bun", CLI, "convert", join(FIXTURES, "sample.html"), out, "--json"],
+      { stdout: "pipe", stderr: "pipe" }
+    )
+    const stdoutText = await new Response(proc.stdout).text()
+    await proc.exited
+    expect(proc.exitCode).toBe(0)
+    expect(existsSync(out)).toBe(true)
+    const json = JSON.parse(stdoutText.trim())
+    expect(json.success).toBe(true)
+    expect(json.output).toBe(out)
+  },
+  { timeout: BROWSER_SMOKE_TIMEOUT_MS }
+)
+
+test("convert の引数不足はヘルプを表示し終了コード2", async () => {
+  const proc = Bun.spawn(["bun", CLI, "convert"], { stdout: "pipe", stderr: "pipe" })
+  const out = await new Response(proc.stdout).text()
+  await proc.exited
+  expect(proc.exitCode).toBe(2)
+  expect(out).toContain("Usage")
+})
+
+test(
   "単一HTML→PDF変換が動く（end-to-end）",
   async () => {
   const out = join(newTmpDir(), "out.pdf")
@@ -45,7 +74,7 @@ test(
   expect(proc.exitCode).toBe(0)
   expect(existsSync(out)).toBe(true)
   },
-  { timeout: 20_000 }
+  { timeout: BROWSER_SMOKE_TIMEOUT_MS }
 )
 
 test(
@@ -64,7 +93,7 @@ test(
   expect(json.output).toBe(out)
   expect(json.page_count).toBe(1)
   },
-  { timeout: 20_000 }
+  { timeout: BROWSER_SMOKE_TIMEOUT_MS }
 )
 
 test("--png フラグで PDF と PNG を同時生成し JSON に PNG 情報を含める", async () => {

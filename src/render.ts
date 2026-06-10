@@ -1,3 +1,4 @@
+/** render 層: Puppeteer で HTML を PDF/PNG に描画する。 */
 import { readFileSync, statSync } from "node:fs"
 import type { Browser } from "puppeteer"
 import { BrowserSession } from "./browser-session"

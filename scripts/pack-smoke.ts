@@ -53,6 +53,8 @@ try {
 
   for (const required of [
     "dist/cli.js",
+    "dist/presets/memo.css",
+    "dist/presets/shared.css",
     "package.json",
     "README.md",
     "README.en.md",

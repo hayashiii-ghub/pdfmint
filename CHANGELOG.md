@@ -8,6 +8,9 @@
 ## [Unreleased]
 
 ### Added
+- `pdfmint convert` サブコマンド（`pdfmint <input> <output>` は互換 alias として維持）
+- `docs/troubleshooting.md`（環境診断・復旧手順）
+- `src/presets/*.css` による Markdown preset スタイルのファイル分離
 - `pdfmint doctor` コマンド（Node / Chromium / サンプル変換の診断、`--json` 対応）
 - Markdown 向け `--preset memo|report|letter`（シンプルな書類スタイル）
 - エラー JSON に `next_command` / `verify_command`（エージェント自動復旧向け）
@@ -15,6 +18,7 @@
 - batch 結果 JSON に `browser_reused: true`
 
 ### Changed
+- 主要モジュールに prepare / render / verify 層の責務コメントを追加
 - batch 変換で Chromium セッションを再利用（起動コストを1回に集約）
 - 出力ディレクトリを自動作成（`mkdir -p` 相当）
 - ローカル `file://` HTML の読み込みを `domcontentloaded` に変更（待ち時間短縮）

@@ -62,8 +62,10 @@ pdfmint invoice.html invoice.pdf --json
 
 | コマンド | 用途 |
 |---|---|
-| `pdfmint <input> <output>` | 単一HTML/Markdown→PDF |
+| `pdfmint convert <input> <output>` | 単一HTML/Markdown→PDF（推奨） |
+| `pdfmint <input> <output>` | 上記と同じ（互換 alias） |
 | `pdfmint batch <pattern> <out-dir>` | バッチ処理 |
+| `pdfmint doctor` | 環境診断 |
 | `pdfmint help` | ヘルプ |
 | `pdfmint --version` | バージョン |
 

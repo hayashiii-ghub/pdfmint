@@ -1,3 +1,4 @@
+/** verify 層: Node / Chromium / サンプル変換の環境診断を行う。 */
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
