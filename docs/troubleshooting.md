@@ -102,6 +102,20 @@ pdfmint help
 - `--png` / `--viewport` / `--scale` は単一変換のみ
 - `doctor` では変換用フラグは使えません
 
+### brand profile が不正（`BRAND_INVALID`）
+
+**症状:** `brand.md` の frontmatter 欠落・`key: value` 以外の行・token 値の形式不正（色/長さ/列挙値）。
+
+**対処:**
+
+```bash
+pdfmint report.md report.pdf --no-brand --json   # まず brand 抜きで変換できるか切り分け
+```
+
+- エラー JSON の `hint` に期待形式が出ます（例: margin は `18mm` のような単一の長さ）
+- 意図しない profile が拾われていないかは、成功時 JSON の `brand.source` で確認できます
+- 探索順は `--brand <path>` > `./pdfmint.brand.md` > `~/.config/pdfmint/brand.md`
+
 ## CLI の形式
 
 推奨:

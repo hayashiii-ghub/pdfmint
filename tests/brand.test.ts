@@ -1,9 +1,26 @@
 import { test, expect } from "bun:test"
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs"
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { parseBrand, brandToCss, resolveBrand } from "../src/brand"
 import { PdfMintError } from "../src/errors"
+
+// global 探索 (~/.config/pdfmint/brand.md) を決定的にするため、XDG をテスト専用 tmp に固定する。
+// 開発者の実 profile がテスト結果に漏れるのを防ぐ。
+const XDG_DIR = mkdtempSync(join(tmpdir(), "pdfmint-brand-xdg-"))
+process.env.XDG_CONFIG_HOME = XDG_DIR
+
+function withGlobalBrand<T>(content: string, fn: (globalPath: string) => T): T {
+  const globalDir = join(XDG_DIR, "pdfmint")
+  mkdirSync(globalDir, { recursive: true })
+  const globalPath = join(globalDir, "brand.md")
+  writeFileSync(globalPath, content)
+  try {
+    return fn(globalPath)
+  } finally {
+    rmSync(globalPath, { force: true })
+  }
+}
 
 function withTmpDir<T>(fn: (dir: string) => T): T {
   const dir = mkdtempSync(join(tmpdir(), "pdfmint-brand-test-"))
@@ -98,10 +115,29 @@ test("resolveBrand: --no-brand は探索を無効化する", () => {
 test("resolveBrand: profile 不在なら tokens 空・source null（既存挙動）", () => {
   withTmpDir((dir) => {
     const { tokens, source } = resolveBrand({ cwd: dir, brandPath: undefined, noBrand: false })
-    // global にユーザ profile があると拾うため、source が null でなくても tokens は空でないだけ。
-    // ここでは project 不在のみ検証する。
-    expect(source === null || typeof source === "string").toBe(true)
-    expect(typeof tokens).toBe("object")
+    expect(tokens).toEqual({})
+    expect(source).toBeNull()
+  })
+})
+
+test("resolveBrand: project 不在時は global (XDG) に fallback する", () => {
+  withTmpDir((dir) => {
+    withGlobalBrand(`---\naccent: "#222"\n---\n`, (globalPath) => {
+      const { tokens, source } = resolveBrand({ cwd: dir })
+      expect(tokens.accent).toBe("#222")
+      expect(source).toBe(globalPath)
+    })
+  })
+})
+
+test("resolveBrand: project が global より優先される", () => {
+  withTmpDir((dir) => {
+    withGlobalBrand(`---\naccent: "#222"\n---\n`, () => {
+      writeFileSync(join(dir, "pdfmint.brand.md"), `---\naccent: "#333"\n---\n`)
+      const { tokens, source } = resolveBrand({ cwd: dir })
+      expect(tokens.accent).toBe("#333")
+      expect(source).toBe(join(dir, "pdfmint.brand.md"))
+    })
   })
 })
 

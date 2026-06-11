@@ -8,6 +8,10 @@ const CLI = join(import.meta.dir, "..", "src", "cli.ts")
 /** CI の初回 Chromium 起動は 20s を超えることがある */
 const BROWSER_SMOKE_TIMEOUT_MS = 45_000
 
+// 開発者の global brand profile (~/.config/pdfmint/brand.md) が CLI 子プロセスへ
+// 漏れて変換結果が変わらないよう、XDG をテスト専用 tmp に固定する (spawn は env を継承)。
+process.env.XDG_CONFIG_HOME = mkdtempSync(join(tmpdir(), "pdfmint-smoke-xdg-"))
+
 function newTmpDir() {
   return mkdtempSync(join(tmpdir(), "pdfmint-smoke-"))
 }
