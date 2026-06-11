@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-11
+
 ### Added
 - brand profile 機構: `brand.md`（YAML風 frontmatter）で色・書体・余白・用紙を一度定義すると Markdown 変換すべてに自動適用
   - 探索順 `--brand <path>` > `./pdfmint.brand.md` > `~/.config/pdfmint/brand.md`（`XDG_CONFIG_HOME` 対応）、`--no-brand` で無効化
