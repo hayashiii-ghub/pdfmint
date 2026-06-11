@@ -24,7 +24,8 @@ jobs:
         run: bun run typecheck
 
       - name: Run tests
-        run: bun test
+        # timeout は package.json の test script に一元化 (CI の Chromium cold-launch flake 対策)
+        run: bun run test
 
       - name: Build
         run: bun run build

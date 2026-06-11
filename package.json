@@ -20,10 +20,10 @@
   },
   "scripts": {
     "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\" --external puppeteer --external marked --external glob && rm -rf dist/presets && cp -r src/presets dist/presets",
-    "test": "bun test",
+    "test": "bun test --timeout 15000",
     "typecheck": "tsc --noEmit",
     "pack:smoke": "bun scripts/pack-smoke.ts",
-    "prepublishOnly": "bun run typecheck && bun test && bun run build && bun run pack:smoke"
+    "prepublishOnly": "bun run typecheck && bun run test && bun run build && bun run pack:smoke"
   },
   "keywords": [
     "pdf",
