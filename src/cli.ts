@@ -11,6 +11,7 @@ import {
 } from "./output"
 import { getVersion } from "./version"
 import { PdfMintError } from "./errors"
+import { resolveBrand, brandToCss } from "./brand"
 import type { MarkdownFontPreset } from "./markdown"
 import { MARKDOWN_PRESETS, type MarkdownPreset } from "./presets/index"
 
@@ -33,6 +34,8 @@ Flags (apply to convert / batch):
   --font <sans|serif>                   Markdown font preset (default: sans)
   --preset <memo|report|letter>         Markdown document preset (default: legacy sans CSS)
   --css <file.css>                      Custom CSS file for Markdown input
+  --brand <file.md>                     Brand profile file (overrides auto-discovery)
+  --no-brand                            Ignore brand profile (auto-discovery off)
   --png <output.png>                    Also render a PNG screenshot (single conversion only)
   --viewport <width>x<height>           PNG viewport (default: 1055x1491; with --png)
   --scale <number>                      PNG device scale factor (default: 3; with --png)
@@ -59,6 +62,8 @@ interface ParsedArgs {
   font?: string
   preset?: string
   css?: string
+  brand?: string
+  noBrand: boolean
   landscape: boolean
   noBackground: boolean
   png?: string
@@ -76,6 +81,7 @@ const VALUE_FLAGS = {
   "--font": "font",
   "--preset": "preset",
   "--css": "css",
+  "--brand": "brand",
   "--png": "png",
   "--viewport": "viewport",
   "--scale": "scale",
@@ -96,6 +102,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   const result: ParsedArgs = {
     positional: [],
     json: false,
+    noBrand: false,
     landscape: false,
     noBackground: false,
     showVersion: false,
@@ -116,6 +123,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]!
     if (a === "--json") result.json = true
+    else if (a === "--no-brand") result.noBrand = true
     else if (a === "--landscape") result.landscape = true
     else if (a === "--no-background") result.noBackground = true
     else if (a === "--version") result.showVersion = true
@@ -215,11 +223,19 @@ function parseFormat(value: string | undefined): ConvertOptions["format"] | unde
 
 function buildOptions(args: ParsedArgs): ConvertOptions {
   const opts: ConvertOptions = {}
-  if (args.format) opts.format = parseFormat(args.format)
-  if (args.margin) opts.margin = args.margin
-  if (args.font) opts.font = parseFontPreset(args.font)
+  // precedence: 明示 CLI フラグ > brand token > 既定値。
+  const brand = resolveBrand({ brandPath: args.brand, noBrand: args.noBrand, cwd: process.cwd() })
+  const format = parseFormat(args.format) ?? brand.tokens.paper
+  if (format) opts.format = format
+  const margin = args.margin ?? brand.tokens.margin
+  if (margin) opts.margin = margin
+  const font = parseFontPreset(args.font) ?? brand.tokens.font
+  if (font) opts.font = font
   if (args.preset) opts.preset = parseMarkdownPreset(args.preset)
   if (args.css) opts.css = args.css
+  const brandCss = brandToCss(brand.tokens)
+  if (brandCss) opts.brandCss = brandCss
+  opts.brandSource = brand.source
   if (args.landscape) opts.landscape = true
   if (args.noBackground) opts.noBackground = true
   if (args.expectPages) opts.expectPages = parsePositiveInteger(args.expectPages, "--expect-pages")
@@ -302,7 +318,7 @@ async function main(argv: string[]): Promise<number> {
           "doctor は pdfmint doctor の形式で指定してください。"
         )
       }
-      if (args.png || args.preset || args.css || args.format || args.margin) {
+      if (args.png || args.preset || args.css || args.format || args.margin || args.brand) {
         throw invalidOption(
           "doctor コマンドでは変換用オプションは利用できません",
           "pdfmint doctor --json"

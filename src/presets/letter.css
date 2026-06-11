@@ -1,5 +1,5 @@
 @page { size: A4; margin: 25mm; }
-h1, h2, h3 { color: #111; margin-top: 1.2em; font-weight: normal; }
+h1, h2, h3 { color: var(--pm-ink, #111); margin-top: 1.2em; font-weight: normal; }
 h1 { font-size: 16pt; text-align: center; border: none; margin-bottom: 1.5em; }
 h2 { font-size: 12pt; }
 p { text-indent: 0; }

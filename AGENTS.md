@@ -50,6 +50,38 @@ pdfmint report.md report.pdf --css report.css --json
 - `--css <file.css>` replaces the preset/default Markdown CSS with a file.
 - HTML input is not modified; set fonts in the HTML `<style>` block.
 
+## Brand profile
+
+A brand profile persists a consistent look (accent color, ink color, font, size, line-height, paper, margin) and applies it to every Markdown conversion automatically — no per-document flags needed.
+
+```bash
+# auto-discovered: ./pdfmint.brand.md (project) then ~/.config/pdfmint/brand.md (global)
+pdfmint report.md report.pdf --preset report --json
+pdfmint report.md report.pdf --brand ./client-a.brand.md --json   # explicit profile
+pdfmint report.md report.pdf --no-brand --json                    # ignore profiles
+```
+
+`brand.md` is YAML-style frontmatter (flat `key: value`); unknown keys are ignored for forward-compat:
+
+```markdown
+---
+accent: "#1B365D"      # heading rule / blockquote accent (CSS var --pm-accent)
+ink: "#1a1a1a"         # body + heading text color (CSS var --pm-ink)
+font: serif            # sans | serif (same as --font)
+font_size: 10.5pt
+line_height: 1.65
+paper: A4              # A4 | A3 | Letter | Legal (same as --format)
+margin: 18mm           # same as --margin
+---
+Free notes below the frontmatter are ignored by the renderer.
+```
+
+- Discovery order: `--brand <path>` > `./pdfmint.brand.md` > `~/.config/pdfmint/brand.md` (honors `XDG_CONFIG_HOME`).
+- Precedence: explicit CLI flag (`--font`/`--format`/`--margin`) > brand token > built-in default.
+- `accent`/`ink`/`font_size`/`line_height` apply via CSS custom properties on Markdown output; HTML input is not modified.
+- `--json` always reports `"brand": { "source": <abs path|null>, "applied": <bool> }` so the agent can confirm which profile was used.
+- Malformed frontmatter or invalid values → error `BRAND_INVALID` with a `hint`.
+
 ## Doctor
 
 Run before first use or when Chromium fails:
@@ -90,7 +122,8 @@ pdfmint report.html report.pdf \
   "format": "A4",
   "size_bytes": 12345,
   "page_count": 1,
-  "duration_ms": 1000
+  "duration_ms": 1000,
+  "brand": { "source": "/abs/pdfmint.brand.md", "applied": true }
 }
 ```
 
@@ -135,6 +168,7 @@ pdfmint report.html report.pdf \
 | `PNG_GENERATION_FAILED` | Check viewport, scale, output path, and disk space |
 | `INVALID_VIEWPORT` | Use `--viewport <width>x<height>` and positive numeric scale |
 | `INVALID_FONT` | Use `--font sans` or `--font serif` |
+| `BRAND_INVALID` | Fix brand.md frontmatter / token value per the `hint`, or pass `--no-brand` |
 | `PAGE_COUNT_MISMATCH` | Fix print CSS or expected page count |
 | `BATCH_NO_MATCHES` | Verify glob pattern; check files exist |
 

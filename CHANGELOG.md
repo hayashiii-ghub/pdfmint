@@ -7,6 +7,16 @@
 
 ## [Unreleased]
 
+### Added
+- brand profile 機構: `brand.md`（YAML風 frontmatter）で色・書体・余白・用紙を一度定義すると Markdown 変換すべてに自動適用
+  - 探索順 `--brand <path>` > `./pdfmint.brand.md` > `~/.config/pdfmint/brand.md`（`XDG_CONFIG_HOME` 対応）、`--no-brand` で無効化
+  - token: `accent` / `ink` / `font_size` / `line_height`（CSS custom property 経由）、`font` / `paper` / `margin`（既存オプションへ反映）
+  - 優先順位は 明示 CLI フラグ > brand token > 既定値
+  - 変換結果 JSON に `brand: { source, applied }`、不正時は `BRAND_INVALID`
+
+### Changed
+- preset / 既定 Markdown CSS をブランド token 対応の CSS custom property（`var(--pm-*, <既定値>)`）化（brand 未指定時のレンダリングは不変）
+
 ## [0.3.0] - 2026-06-10
 
 ### Added

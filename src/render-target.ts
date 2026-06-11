@@ -10,6 +10,7 @@ export interface RenderTargetMarkdownOptions {
   font?: MarkdownFontPreset
   preset?: MarkdownPreset
   cssPath?: string
+  brandCss?: string
 }
 
 export interface RenderTarget {
@@ -49,6 +50,7 @@ export function prepareRenderTarget(
       font: markdownOptions.font,
       preset: markdownOptions.preset,
       customCss: css,
+      brandCss: markdownOptions.brandCss,
     })
     const tmpDir = mkdtempSync(join(tmpdir(), "pdfmint-md-"))
     const renderPath = join(tmpDir, "rendered.html")
