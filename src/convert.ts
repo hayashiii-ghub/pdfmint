@@ -24,6 +24,10 @@ export interface ConvertOptions {
   font?: MarkdownFontPreset
   preset?: MarkdownPreset
   css?: string
+  /** brand profile 由来の :root 変数ブロック (markdown 入力時に prepend)。 */
+  brandCss?: string
+  /** 適用した brand.md の絶対パス。未適用なら null。--json 報告用。 */
+  brandSource?: string | null
 }
 
 export interface ConvertResult {
@@ -35,6 +39,7 @@ export interface ConvertResult {
   page_count?: number
   png?: PngArtifact
   timing?: RenderTiming
+  brand?: { source: string | null; applied: boolean }
 }
 
 export async function convertHtmlToPdf(
@@ -49,6 +54,7 @@ export async function convertHtmlToPdf(
     font: options.font,
     preset: options.preset,
     cssPath: options.css,
+    brandCss: options.brandCss,
   })
   const format = options.format ?? "A4"
   const margin = options.margin ?? "0"
@@ -91,6 +97,9 @@ export async function convertHtmlToPdf(
       ...(artifacts.pdf.page_count !== undefined ? { page_count: artifacts.pdf.page_count } : {}),
       ...(artifacts.png ? { png: artifacts.png } : {}),
       timing: artifacts.timing,
+      ...(options.brandSource !== undefined
+        ? { brand: { source: options.brandSource, applied: options.brandSource !== null } }
+        : {}),
     }
   } finally {
     target.cleanup()

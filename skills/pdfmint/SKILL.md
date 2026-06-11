@@ -22,6 +22,7 @@ description: HTML/Markdown を綺麗な日本語PDFやPNGに変換する CLI ツ
 4. Markdown は用途に応じて `--preset memo|report|letter` を付ける
 5. 明朝系にしたい場合は `--font serif`（`letter` preset は既定で serif 寄り）
 6. 書体・余白を完全固定したい場合は `--css <file.css>`
+   - 案件・組織で見た目(色・書体・余白・用紙)を統一したい場合は brand profile (`./pdfmint.brand.md` か `~/.config/pdfmint/brand.md`) が自動適用される。明示指定は `--brand <file.md>`、無効化は `--no-brand`。`--json` の `brand` フィールドで適用状況を確認
 7. PNGも必要なら `--png <output.png> --viewport <width>x<height> --scale <number>`
 8. 1ページ固定が必要なら `--expect-pages 1`
 9. JSON出力を解析して結果を報告
@@ -66,6 +67,7 @@ pdfmint doctor --json
 - `INPUT_NOT_FOUND`: ファイルパスを確認
 - `PAGE_LOAD_FAILED`: HTML内の外部リソース（フォント・画像）を確認
 - `INVALID_PRESET`: `--preset memo|report|letter`
+- `BRAND_INVALID`: brand.md の frontmatter / token 値を `hint` に従って修正、または `--no-brand`
 - `PAGE_COUNT_MISMATCH`: `@page` / 高さ / overflow を確認
 
 詳細は `AGENTS.md` を参照。

@@ -74,6 +74,8 @@ pdfmint invoice.html invoice.pdf --json
 | `--no-background` | off | Disable CSS backgrounds |
 | `--font <sans\|serif>` | sans | Japanese font preset for Markdown input |
 | `--css <file.css>` | off | Custom CSS file for Markdown input |
+| `--brand <file.md>` | auto-discovery | Brand profile file (consistent look across documents) |
+| `--no-brand` | off | Disable brand profile auto-discovery |
 | `--png <output.png>` | off | Also render a PNG from the same input |
 | `--viewport <WxH>` | 1055x1491 | PNG viewport size |
 | `--scale <number>` | 3 | PNG device scale factor |
@@ -112,6 +114,27 @@ When generating PDF and PNG together:
   }
 }
 ```
+
+## Brand profile
+
+Define your look (colors, font, spacing, paper) once in a `brand.md` and it applies to every Markdown conversion automatically — no per-document flags. Auto-discovered from `./pdfmint.brand.md` (project), then `~/.config/pdfmint/brand.md` (global).
+
+```markdown
+---
+accent: "#1B365D"      # heading rule / blockquote accent
+ink: "#1a1a1a"         # body and heading text color
+font: serif            # sans | serif
+font_size: 10.5pt
+line_height: 1.65
+paper: A4              # A4 | A3 | Letter | Legal
+margin: 18mm
+---
+Free notes below the frontmatter are ignored by the renderer.
+```
+
+- Precedence: explicit CLI flag (`--font` / `--format` / `--margin`) > brand token > built-in default
+- `--brand <file.md>` to pick a profile explicitly, `--no-brand` to disable
+- The `--json` result reports which profile was applied via the `brand` field
 
 ---
 

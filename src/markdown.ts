@@ -9,6 +9,8 @@ export interface MarkdownOptions {
   preset?: MarkdownPreset
   customCss?: string
   cssPath?: string
+  /** brand profile 由来の :root 変数ブロック。常に先頭へ prepend する。 */
+  brandCss?: string
 }
 
 const FONT_STACKS: Record<MarkdownFontPreset, string> = {
@@ -22,13 +24,13 @@ function legacyDefaultCss(font: MarkdownFontPreset): string {
 @page { size: A4; margin: 20mm; }
 body {
   font-family: ${FONT_STACKS[font]};
-  font-size: 11pt;
-  line-height: 1.7;
-  color: #1a1a1a;
+  font-size: var(--pm-font-size, 11pt);
+  line-height: var(--pm-line-height, 1.7);
+  color: var(--pm-ink, #1a1a1a);
 }
-h1, h2, h3, h4 { color: #222; margin-top: 1.5em; }
+h1, h2, h3, h4 { color: var(--pm-ink, #222); margin-top: 1.5em; }
 h1 { font-size: 20pt; border-bottom: 2px solid #333; padding-bottom: 0.2em; }
-h2 { font-size: 16pt; border-left: 4px solid #4a6741; padding-left: 0.5em; }
+h2 { font-size: 16pt; border-left: 4px solid var(--pm-accent, #4a6741); padding-left: 0.5em; }
 h3 { font-size: 14pt; }
 p { margin: 0.5em 0; }
 ul, ol { padding-left: 1.5em; }
@@ -43,13 +45,15 @@ blockquote { border-left: 4px solid #ddd; padding-left: 1em; color: #666; margin
 }
 
 function resolveCss(options: MarkdownOptions): string {
-  if (options.customCss) return options.customCss
+  // brand の :root 変数は customCss escape hatch でも参照できるよう常に先頭に置く。
+  const brand = options.brandCss ?? ""
+  if (options.customCss) return brand + options.customCss
   const font = options.font ?? "sans"
   if (options.preset) {
     const effectiveFont = options.preset === "letter" ? (options.font ?? "serif") : font
-    return presetCss(options.preset, effectiveFont)
+    return brand + presetCss(options.preset, effectiveFont)
   }
-  return legacyDefaultCss(font)
+  return brand + legacyDefaultCss(font)
 }
 
 export function markdownToHtml(md: string, options: MarkdownOptions | string = {}): string {

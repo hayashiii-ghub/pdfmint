@@ -80,6 +80,8 @@ pdfmint invoice.html invoice.pdf --json
 | `--no-background` | off | CSS背景無効 |
 | `--font <sans\|serif>` | sans | Markdown入力時の日本語フォントpreset |
 | `--css <file.css>` | off | Markdown入力時のCSSをファイルから指定 |
+| `--brand <file.md>` | 自動探索 | brand profile を明示指定（見た目を統一） |
+| `--no-brand` | off | brand profile の自動探索を無効化 |
 | `--png <output.png>` | off | PDF と同じ入力から PNG も生成 |
 | `--viewport <WxH>` | 1055x1491 | PNG の画面サイズ |
 | `--scale <number>` | 3 | PNG のデバイススケール |
@@ -132,6 +134,27 @@ PDF と PNG を同時生成した場合:
   }
 }
 ```
+
+## brand profile（見た目の統一）
+
+色・書体・余白・用紙サイズを `brand.md` に一度書いておくと、Markdown変換すべてに自動適用されます（毎回フラグ指定が不要）。`./pdfmint.brand.md`（プロジェクト）→ `~/.config/pdfmint/brand.md`（グローバル）の順に自動探索。
+
+```markdown
+---
+accent: "#1B365D"      # 見出し罫線・引用のアクセント色
+ink: "#1a1a1a"         # 本文・見出しの文字色
+font: serif            # sans | serif
+font_size: 10.5pt
+line_height: 1.65
+paper: A4              # A4 | A3 | Letter | Legal
+margin: 18mm
+---
+（frontmatter 以降の本文はメモ。レンダリングには使われません）
+```
+
+- 優先順位: 明示フラグ（`--font` / `--format` / `--margin`）> brand token > 既定値
+- `--brand <file.md>` で明示指定、`--no-brand` で無効化
+- `--json` の `brand` フィールドで適用された profile を確認できます
 
 ## AIエージェントから使う
 
