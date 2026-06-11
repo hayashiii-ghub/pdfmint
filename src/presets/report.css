@@ -3,7 +3,7 @@
 /* 見出し: 線ではなくウェイトと余白で階層を作る。アクセントは h2 の文字色 1 点のみ。 */
 h1, h2, h3, h4 { color: var(--pm-ink, #1a1a1a); break-after: avoid; }
 h1 { font-size: 19pt; letter-spacing: 0.02em; margin: 0 0 1.1em; padding-bottom: 0.4em; border-bottom: 1px solid #d9d9d9; }
-h2 { font-size: 14pt; color: var(--pm-accent, #1b3a5e); margin: 2em 0 0.6em; }
+h2 { font-size: 14pt; color: var(--pm-accent, #395437); margin: 2em 0 0.6em; }
 h3 { font-size: 11.5pt; margin: 1.6em 0 0.5em; }
 
 /* 表: booktabs 風の横罫線のみ。等幅数字で桁を揃える (右揃えは Markdown の |---:| 記法で)。 */
@@ -13,5 +13,5 @@ td { border: none; border-bottom: 1px solid #e3e3e3; padding: 7px 10px; }
 tbody tr:last-child td { border-bottom: 1px solid #aaa; }
 
 /* 引用・コード: ページ境界で泣き別れさせない。 */
-blockquote { border-left: 2px solid var(--pm-accent, #1b3a5e); padding-left: 1em; color: #444; margin: 1.2em 0; break-inside: avoid; }
+blockquote { border-left: 2px solid var(--pm-accent, #395437); padding-left: 1em; color: #444; margin: 1.2em 0; break-inside: avoid; }
 pre { break-inside: avoid; }

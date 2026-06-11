@@ -37,7 +37,7 @@ test("テーブルが正しく変換される", () => {
 test("report preset は accent 文字色の h2 と改ページ制御を含む", () => {
   const html = markdownToHtml("# テスト", { preset: "report" })
   // アクセントは h2 の文字色 1 点 (brand token --pm-accent で差し替え可能)
-  expect(html).toContain("color: var(--pm-accent, #1b3a5e)")
+  expect(html).toContain("color: var(--pm-accent, #395437)")
   // 表・コードの泣き別れ防止と桁揃え
   expect(html).toContain("break-inside: avoid")
   expect(html).toContain("font-variant-numeric: tabular-nums")
@@ -57,7 +57,7 @@ test("brandCss は <style> 先頭に prepend される", () => {
   const html = markdownToHtml("# テスト", { preset: "report", brandCss })
   expect(html).toContain("--pm-accent: #1B365D")
   // brand ブロックが preset 本体より前に来る
-  expect(html.indexOf("--pm-accent: #1B365D")).toBeLessThan(html.indexOf("var(--pm-accent, #1b3a5e)"))
+  expect(html.indexOf("--pm-accent: #1B365D")).toBeLessThan(html.indexOf("var(--pm-accent, #395437)"))
 })
 
 test("Markdown のテーブル揃え記法 (|---:|) を全 preset で尊重する", () => {
