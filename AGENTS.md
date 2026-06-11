@@ -219,6 +219,7 @@ pdfmint report.html report.pdf \
 - **Use `--css report.css`** for Markdown reports that need fixed fonts via `@font-face`, margins, or heading styles
 - **Use one HTML source of truth** when generating both PNG and PDF; avoid permanent wrapper HTML files
 - **Use `--expect-pages 1`** for one-page reports so accidental pagination is caught
+- **Right-align numeric table columns** with Markdown alignment syntax (`|---:|`) — all presets honor it, and `--preset report` adds tabular figures for clean digit alignment
 - **For Japanese text**, Markdown defaults to `--font sans` with Noto Sans JP first; use `--font serif` for Noto Serif JP first; use `--css` when the exact rendered font must be guaranteed
 - **For QR codes**, embed as `<img src="data:image/svg+xml;base64,...">` (until v0.2.0 adds native QR support)
 - **On `PAGE_LOAD_FAILED`**, suggest the user check external resources or simplify HTML

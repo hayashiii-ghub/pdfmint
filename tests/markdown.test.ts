@@ -34,9 +34,13 @@ test("テーブルが正しく変換される", () => {
   expect(html).toContain("<th>A</th>")
 })
 
-test("report preset は左ボーダー付き h2 スタイルを含む", () => {
+test("report preset は accent 文字色の h2 と改ページ制御を含む", () => {
   const html = markdownToHtml("# テスト", { preset: "report" })
-  expect(html).toContain("border-left: 4px solid var(--pm-accent, #4a6741)")
+  // アクセントは h2 の文字色 1 点 (brand token --pm-accent で差し替え可能)
+  expect(html).toContain("color: var(--pm-accent, #395437)")
+  // 表・コードの泣き別れ防止と桁揃え
+  expect(html).toContain("break-inside: avoid")
+  expect(html).toContain("font-variant-numeric: tabular-nums")
 })
 
 test("brand 未指定時は :root 変数ブロックを生成しない（既存挙動を変えない）", () => {
@@ -53,7 +57,17 @@ test("brandCss は <style> 先頭に prepend される", () => {
   const html = markdownToHtml("# テスト", { preset: "report", brandCss })
   expect(html).toContain("--pm-accent: #1B365D")
   // brand ブロックが preset 本体より前に来る
-  expect(html.indexOf("--pm-accent: #1B365D")).toBeLessThan(html.indexOf("var(--pm-accent, #4a6741)"))
+  expect(html.indexOf("--pm-accent: #1B365D")).toBeLessThan(html.indexOf("var(--pm-accent, #395437)"))
+})
+
+test("Markdown のテーブル揃え記法 (|---:|) を全 preset で尊重する", () => {
+  const md = "| A | B |\n|---|---:|\n| x | 1,234 |"
+  for (const preset of [undefined, "memo", "report", "letter"] as const) {
+    const html = markdownToHtml(md, preset ? { preset } : {})
+    // marked は align 属性を出すので、CSS の text-align: left が打ち消さないこと
+    expect(html).toContain('align="right"')
+    expect(html).toContain('td[align="right"] { text-align: right; }')
+  }
 })
 
 test("letter preset は中央寄せ h1 を含む", () => {

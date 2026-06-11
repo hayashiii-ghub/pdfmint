@@ -16,6 +16,10 @@
 
 ### Changed
 - preset / 既定 Markdown CSS をブランド token 対応の CSS custom property（`var(--pm-*, <既定値>)`）化（brand 未指定時のレンダリングは不変）
+- `--preset report` を納品書類向けに再設計: 見出しは線でなくウェイトと余白で階層化（アクセントは h2 文字色のみ、既定色を緑 `#4a6741` → 深緑 `#395437`）、表は booktabs 風横罫線のみ + `tabular-nums`、表・コード・引用に改ページ制御（`break-inside: avoid`）。preset なしの既定 CSS は不変
+
+### Fixed
+- Markdown のテーブル揃え記法（`|---:|` / `|:---:|`）が全 preset で無視されていたのを修正（CSS の `text-align: left` が marked の `align` 属性を上書きしていた）
 
 ## [0.3.0] - 2026-06-10
 

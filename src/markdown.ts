@@ -36,6 +36,8 @@ p { margin: 0.5em 0; }
 ul, ol { padding-left: 1.5em; }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; }
 th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+th[align="center"], td[align="center"] { text-align: center; }
+th[align="right"], td[align="right"] { text-align: right; }
 th { background: #f5f5f5; }
 code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: "SFMono-Regular", "Menlo", monospace; }
 pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }
