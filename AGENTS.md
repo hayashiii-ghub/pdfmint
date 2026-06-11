@@ -204,6 +204,7 @@ pdfmint report.html report.pdf \
 | CLI routing / flags | `bun test tests/smoke.test.ts` |
 | Single convert / PNG / presets | `bun test tests/convert.test.ts tests/smoke.test.ts` |
 | Markdown CSS / presets | `bun test tests/markdown.test.ts` |
+| Brand profile | `bun test tests/brand.test.ts tests/markdown.test.ts` |
 | Batch reuse | `bun test tests/batch.test.ts` |
 | Error JSON / recovery | `bun test tests/errors.test.ts` |
 | Doctor | `pdfmint doctor --json` |
@@ -221,5 +222,5 @@ pdfmint report.html report.pdf \
 - **Use `--expect-pages 1`** for one-page reports so accidental pagination is caught
 - **Right-align numeric table columns** with Markdown alignment syntax (`|---:|`) — all presets honor it, and `--preset report` adds tabular figures for clean digit alignment
 - **For Japanese text**, Markdown defaults to `--font sans` with Noto Sans JP first; use `--font serif` for Noto Serif JP first; use `--css` when the exact rendered font must be guaranteed
-- **For QR codes**, embed as `<img src="data:image/svg+xml;base64,...">` (until v0.2.0 adds native QR support)
+- **For QR codes**, embed as `<img src="data:image/svg+xml;base64,...">` (no native QR support)
 - **On `PAGE_LOAD_FAILED`**, suggest the user check external resources or simplify HTML
