@@ -17,6 +17,14 @@
 - 🎨 Beautiful Japanese rendering (Noto Sans JP first; Noto Serif JP selectable)
 - 🔧 TypeScript implementation with Bun for development and Node.js 22+ for distribution
 
+## Output sample
+
+A PDF generated from Markdown with `--preset report` — no customization, default settings:
+
+<img src="https://raw.githubusercontent.com/hayashiii-ghub/pdfmint/main/docs/assets/report-sample.png" alt="Monthly report PDF sample generated with the report preset" width="720">
+
+Source: [docs/assets/report-sample.md](./docs/assets/report-sample.md) — accent color, font, and spacing are swappable via the [brand profile](#brand-profile).
+
 ---
 
 ## Install

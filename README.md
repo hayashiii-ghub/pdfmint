@@ -17,6 +17,14 @@ HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントフ�
 - 🎨 日本語フォントを綺麗にレンダリング(Noto Sans JP 優先、Noto Serif JP も選択可)
 - 🔧 TypeScript で実装、Bun 開発 / Node.js 22+ 配布のハイブリッド構成
 
+## 出力サンプル
+
+`--preset report` で Markdown から生成したPDF（無調整・デフォルト設定のまま）:
+
+<img src="https://raw.githubusercontent.com/hayashiii-ghub/pdfmint/main/docs/assets/report-sample.png" alt="report preset で生成した月次レポートPDFのサンプル" width="720">
+
+ソース: [docs/assets/report-sample.md](./docs/assets/report-sample.md) ／ 差し色・書体・余白は [brand profile](#brand-profile見た目の統一) で差し替えできます。
+
 ---
 
 ## インストール
