@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-06-12
+
 ### Fixed
 - Markdown 入力の PNG 出力に余白が一切付かなかったのを修正（`@page` の margin は印刷=PDF にしか効かないため、screen 側に同じ余白の `body` padding を追加）。brand の `margin` token も `--pm-margin` 経由で PNG に反映される
 
