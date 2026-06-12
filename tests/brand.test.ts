@@ -78,8 +78,10 @@ test("parseBrand: margin は単値のみ許可（render が各辺へ素通しす
 
 test("brandToCss は設定された CSS token のみ :root に出す", () => {
   expect(brandToCss({ accent: "#1B365D", ink: "#111" })).toBe(":root { --pm-accent: #1B365D; --pm-ink: #111; }\n")
-  // font/paper/margin は CSS 変数ではないので含まれない
-  expect(brandToCss({ font: "serif", paper: "A4", margin: "18mm" })).toBe("")
+  // margin は PNG (screen) padding 用に --pm-margin としても出す
+  expect(brandToCss({ margin: "18mm" })).toBe(":root { --pm-margin: 18mm; }\n")
+  // font/paper は CSS 変数ではないので含まれない
+  expect(brandToCss({ font: "serif", paper: "A4" })).toBe("")
   expect(brandToCss({})).toBe("")
 })
 

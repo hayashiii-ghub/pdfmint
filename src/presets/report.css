@@ -15,3 +15,8 @@ tbody tr:last-child td { border-bottom: 1px solid #aaa; }
 /* 引用・コード: ページ境界で泣き別れさせない。 */
 blockquote { border-left: 2px solid var(--pm-accent, #395437); padding-left: 1em; color: #444; margin: 1.2em 0; break-inside: avoid; }
 pre { break-inside: avoid; }
+
+/* PNG (screen) 用の余白: @page は印刷にしか効かないため、screen では同じ余白を padding で再現する。 */
+@media screen {
+  body { margin: 0; padding: var(--pm-margin, 18mm); box-sizing: border-box; }
+}

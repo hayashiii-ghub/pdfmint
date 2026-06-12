@@ -4,3 +4,8 @@ h1 { font-size: 18pt; border-bottom: 1px solid #ccc; padding-bottom: 0.2em; }
 h2 { font-size: 14pt; }
 h3 { font-size: 12pt; }
 blockquote { border-left: 4px solid #ddd; padding-left: 1em; color: #666; margin: 1em 0; }
+
+/* PNG (screen) 用の余白: @page は印刷にしか効かないため、screen では同じ余白を padding で再現する。 */
+@media screen {
+  body { margin: 0; padding: var(--pm-margin, 20mm); box-sizing: border-box; }
+}
