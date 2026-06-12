@@ -60,6 +60,15 @@ test("brandCss は <style> 先頭に prepend される", () => {
   expect(html.indexOf("--pm-accent: #1B365D")).toBeLessThan(html.indexOf("var(--pm-accent, #395437)"))
 })
 
+test("PNG (screen) 用の余白 padding を全 preset と legacy CSS が持つ", () => {
+  // @page は印刷専用のため、screen 側に padding が無いと PNG が縁なしになる (regression guard)
+  for (const preset of [undefined, "memo", "report", "letter"] as const) {
+    const html = markdownToHtml("# テスト", preset ? { preset } : {})
+    expect(html).toContain("@media screen")
+    expect(html).toContain("padding: var(--pm-margin, ")
+  }
+})
+
 test("Markdown のテーブル揃え記法 (|---:|) を全 preset で尊重する", () => {
   const md = "| A | B |\n|---|---:|\n| x | 1,234 |"
   for (const preset of [undefined, "memo", "report", "letter"] as const) {

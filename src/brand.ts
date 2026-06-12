@@ -165,7 +165,8 @@ function applyToken(tokens: BrandTokens, key: string, value: string, source: str
   }
 }
 
-/** CSS custom property を扱う token (accent/ink/font_size/line_height) を :root ブロックにする。
+/** CSS custom property を扱う token (accent/ink/font_size/line_height/margin) を :root ブロックにする。
+ *  margin は PDF へは ConvertOptions.margin、PNG (screen) へは --pm-margin の二経路で効く。
  *  該当 token が無ければ空文字 (= brand-absent 時に出力を一切変えない)。 */
 export function brandToCss(tokens: BrandTokens): string {
   const decls: string[] = []
@@ -173,6 +174,7 @@ export function brandToCss(tokens: BrandTokens): string {
   if (tokens.ink) decls.push(`--pm-ink: ${tokens.ink};`)
   if (tokens.fontSize) decls.push(`--pm-font-size: ${tokens.fontSize};`)
   if (tokens.lineHeight) decls.push(`--pm-line-height: ${tokens.lineHeight};`)
+  if (tokens.margin) decls.push(`--pm-margin: ${tokens.margin};`)
   if (decls.length === 0) return ""
   return `:root { ${decls.join(" ")} }\n`
 }
