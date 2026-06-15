@@ -46,7 +46,7 @@ console.log(html)
 ## まとめ
 
 1. Markdown を書く
-2. `pdfmint demo.md demo.pdf --font serif` を実行
+2. `pdfmint report.md report.pdf --font serif` を実行
 3. 提出用 PDF が完成
 
 [^1]: 脚注は文書末にまとめて出力されます。
