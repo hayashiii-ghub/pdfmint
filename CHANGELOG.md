@@ -14,6 +14,10 @@
   - **callout（GitHub alerts）**: `> [!NOTE]` / `[!TIP]` / `[!IMPORTANT]` / `[!WARNING]` / `[!CAUTION]` を色付きの注意ブロックに変換（`marked-alert`）
   - **シンタックスハイライト**: コードフェンスを highlight.js（GitHub ライトテーマ）で色付け（`marked-highlight` + `highlight.js`）
 
+### Changed
+- 既定 Markdown CSS（preset なし）の差し色を深緑のカラーテーマで統一。見出し（h1 下線・h2 縦バー・h3 文字色）、リンク、表ヘッダ（淡い深緑地＋深緑の下罫線）、`> [!NOTE]` callout（縦バー・タイトル・地）を同じ `--pm-accent`（深緑）に揃え、明色は `color-mix` で派生。brand の `accent` token を変えると全体が追従する（他の callout 種別の意味色・preset の見た目は不変）
+- 見出し（h1〜h4）に `break-after: avoid` を付け、ページ末で見出しだけが孤立しないようにした
+
 ### Fixed
 - バンドル後（`node dist/cli.js`）に `--preset memo|report|letter` が CSS ファイルを見つけられず失敗していたのを修正（`PRESETS_DIR` が `dist` を指す一方で CSS は `dist/presets/` にあった）。source 実行と bundle 実行の両方の CSS 所在を探索するようにし、`pack:smoke` にビルド済み dist での実 preset 変換ガードを追加
 - Markdown 入力で `--margin` と brand の `margin` token が PDF に反映されていなかったのを修正。preset / 既定 CSS の `@page` margin が固定値で、Chromium では `@page { margin }` が Puppeteer の margin 指定を常に上書きするため、`--margin` は no-op、brand margin は PNG（screen）にしか効かず PDF と食い違っていた。`@page` margin を `var(--pm-margin, <既定値>)` 化し、解決済み margin（`--margin` フラグ優先 > brand token）を `--pm-margin` に流すことで、PDF（@page）と PNG（screen padding）が同一変数を参照して常に一致するようにした。`--margin` は CSS 注入防止のため単位付き長さ / 0 のみ許可（不正値は `INVALID_OPTION`）

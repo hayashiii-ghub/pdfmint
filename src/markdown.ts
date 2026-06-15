@@ -52,7 +52,9 @@ a[data-footnote-backref] { text-decoration: none; }
 .markdown-alert > :last-child { margin-bottom: 0; }
 .markdown-alert-title { display: flex; align-items: center; font-weight: 600; margin-bottom: 0.3em; }
 .markdown-alert-title svg { fill: currentColor; margin-right: 0.4em; }
-.markdown-alert-note { border-left-color: #0969da; } .markdown-alert-note .markdown-alert-title { color: #0969da; }
+/* note は差し色 (--pm-accent = 深緑) で統一: 縦バー＝深緑、地＝淡い深緑、タイトル＝深緑。 */
+.markdown-alert-note { border-left-color: var(--pm-accent, #2f5d4e); background-color: color-mix(in srgb, var(--pm-accent, #2f5d4e) 7%, #ffffff); }
+.markdown-alert-note .markdown-alert-title { color: var(--pm-accent, #2f5d4e); }
 .markdown-alert-tip { border-left-color: #1a7f37; } .markdown-alert-tip .markdown-alert-title { color: #1a7f37; }
 .markdown-alert-important { border-left-color: #8250df; } .markdown-alert-important .markdown-alert-title { color: #8250df; }
 .markdown-alert-warning { border-left-color: #9a6700; } .markdown-alert-warning .markdown-alert-title { color: #9a6700; }
@@ -83,17 +85,21 @@ body {
   line-height: var(--pm-line-height, 1.7);
   color: var(--pm-ink, #1a1a1a);
 }
-h1, h2, h3, h4 { color: var(--pm-ink, #222); margin-top: 1.5em; }
-h1 { font-size: 20pt; border-bottom: 2px solid #333; padding-bottom: 0.2em; }
-h2 { font-size: 16pt; border-left: 4px solid var(--pm-accent, #4a6741); padding-left: 0.5em; }
-h3 { font-size: 14pt; }
+/* 差し色は深緑 (--pm-accent) で統一。明色は color-mix で派生する (brand で accent を変えると全体が追従)。
+   見出しはページ末で孤立させない (break-after: avoid)。 */
+h1, h2, h3, h4 { color: var(--pm-ink, #222); margin-top: 1.5em; break-after: avoid; }
+h1 { font-size: 20pt; border-bottom: 2px solid var(--pm-accent, #2f5d4e); padding-bottom: 0.2em; }
+h2 { font-size: 16pt; border-left: 4px solid var(--pm-accent, #2f5d4e); padding-left: 0.5em; }
+h3 { font-size: 14pt; color: color-mix(in srgb, var(--pm-ink, #222) 70%, var(--pm-accent, #2f5d4e)); }
+a { color: var(--pm-accent, #2f5d4e); }
 p { margin: 0.5em 0; }
 ul, ol { padding-left: 1.5em; }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; }
 th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
 th[align="center"], td[align="center"] { text-align: center; }
 th[align="right"], td[align="right"] { text-align: right; }
-th { background: #f5f5f5; }
+/* 表ヘッダも深緑テーマに揃える (淡い深緑地 + 深緑の下罫線)。 */
+th { background: color-mix(in srgb, var(--pm-accent, #2f5d4e) 8%, #ffffff); border-bottom: 2px solid var(--pm-accent, #2f5d4e); font-weight: 600; }
 code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: "SFMono-Regular", "Menlo", monospace; }
 pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }
 pre code { background: none; padding: 0; }

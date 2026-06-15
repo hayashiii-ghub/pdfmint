@@ -25,6 +25,27 @@ test("--pm-margin は @page(PDF) と @media screen(PNG) の両方に効く（同
   }
 })
 
+test("NOTE callout の差し色は --pm-accent 由来（brand accent で追従する）", () => {
+  const html = markdownToHtml("> [!NOTE]\n> x")
+  expect(html).toContain(".markdown-alert-note")
+  // タイトル色・縦バーが accent（深緑）になっている
+  expect(html).toContain(".markdown-alert-note .markdown-alert-title { color: var(--pm-accent")
+  expect(html).toContain(".markdown-alert-note { border-left-color: var(--pm-accent")
+})
+
+test("差し色 (--pm-accent) を見出し・表・リンクで共有する（深緑テーマで統一）", () => {
+  const html = markdownToHtml("# x")
+  // h1 下線・h2 バー・表ヘッダ罫線・リンクが同じ accent を参照
+  expect(html).toContain("border-bottom: 2px solid var(--pm-accent")
+  expect(html).toContain("border-left: 4px solid var(--pm-accent")
+  expect(html).toContain("a { color: var(--pm-accent")
+})
+
+test("見出しに break-after: avoid（ページ末で見出しだけ孤立させない）", () => {
+  const html = markdownToHtml("# x")
+  expect(html).toContain("break-after: avoid")
+})
+
 test("frontmatter を本文に漏らさず title を <title> に反映する", () => {
   const md = "---\ntitle: テスト文書\nauthor: X\n---\n\n# 見出し\n\n本文"
   const html = markdownToHtml(md)
