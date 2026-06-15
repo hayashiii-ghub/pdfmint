@@ -20,6 +20,23 @@ HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントフ�
 
 ---
 
+## 出力例
+
+3 つの preset の実出力。各画像はソース Markdown と PDF へのリンクです（[`examples/`](./examples)）。
+
+| report | letter | memo |
+|:---:|:---:|:---:|
+| [![report](./examples/report.png)](./examples/report.pdf) | [![letter](./examples/letter.png)](./examples/letter.pdf) | [![memo](./examples/memo.png)](./examples/memo.pdf) |
+| 技術レポート（`--preset report`）<br>表・コード・callout・脚注 | 挨拶状（`--preset letter`）<br>明朝・中央寄せタイトル | 議事メモ（`--preset memo`）<br>シンプルな業務文書 |
+
+ソース: [report.md](./examples/report.md) ・ [letter.md](./examples/letter.md) ・ [memo.md](./examples/memo.md)
+
+```bash
+pdfmint examples/report.md report.pdf --preset report
+```
+
+---
+
 ## インストール
 
 ```bash

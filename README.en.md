@@ -20,6 +20,23 @@
 
 ---
 
+## Examples
+
+Real output from the three presets. Each image links to its source Markdown and PDF ([`examples/`](./examples)).
+
+| report | letter | memo |
+|:---:|:---:|:---:|
+| [![report](./examples/report.png)](./examples/report.pdf) | [![letter](./examples/letter.png)](./examples/letter.pdf) | [![memo](./examples/memo.png)](./examples/memo.pdf) |
+| Technical report (`--preset report`)<br>tables, code, callouts, footnotes | Formal letter (`--preset letter`)<br>serif, centered title | Meeting memo (`--preset memo`)<br>simple business doc |
+
+Sources: [report.md](./examples/report.md) · [letter.md](./examples/letter.md) · [memo.md](./examples/memo.md)
+
+```bash
+pdfmint examples/report.md report.pdf --preset report
+```
+
+---
+
 ## Install
 
 ```bash
