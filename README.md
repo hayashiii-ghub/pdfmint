@@ -22,17 +22,14 @@ HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントフ�
 
 ## 出力例
 
-3 つの preset の実出力。各画像はソース Markdown と PDF へのリンクです（[`examples/`](./examples)）。
+Markdown 1 枚をデフォルト設定（preset なし）で変換した出力です。フロントマター・表（数値右揃え）・callout・コードのハイライト・脚注まで、素のまま対応します。
 
-| report | letter | memo |
-|:---:|:---:|:---:|
-| [![report](./examples/report.png)](./examples/report.pdf) | [![letter](./examples/letter.png)](./examples/letter.pdf) | [![memo](./examples/memo.png)](./examples/memo.pdf) |
-| 技術レポート（`--preset report`）<br>表・コード・callout・脚注 | 挨拶状（`--preset letter`）<br>明朝・中央寄せタイトル | 議事メモ（`--preset memo`）<br>シンプルな業務文書 |
+[![pdfmint の出力例](./examples/demo.png)](./examples/demo.pdf)
 
-ソース: [report.md](./examples/report.md) ・ [letter.md](./examples/letter.md) ・ [memo.md](./examples/memo.md)
+ソース: [examples/demo.md](./examples/demo.md) → [demo.pdf](./examples/demo.pdf)
 
 ```bash
-pdfmint examples/report.md report.pdf --preset report
+pdfmint examples/demo.md demo.pdf
 ```
 
 ---

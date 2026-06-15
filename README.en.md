@@ -22,17 +22,14 @@
 
 ## Examples
 
-Real output from the three presets. Each image links to its source Markdown and PDF ([`examples/`](./examples)).
+A single Markdown file converted with the default settings (no preset). Frontmatter, tables (with right-aligned numbers), callouts, syntax-highlighted code, and footnotes all work out of the box.
 
-| report | letter | memo |
-|:---:|:---:|:---:|
-| [![report](./examples/report.png)](./examples/report.pdf) | [![letter](./examples/letter.png)](./examples/letter.pdf) | [![memo](./examples/memo.png)](./examples/memo.pdf) |
-| Technical report (`--preset report`)<br>tables, code, callouts, footnotes | Formal letter (`--preset letter`)<br>serif, centered title | Meeting memo (`--preset memo`)<br>simple business doc |
+[![pdfmint example output](./examples/demo.png)](./examples/demo.pdf)
 
-Sources: [report.md](./examples/report.md) · [letter.md](./examples/letter.md) · [memo.md](./examples/memo.md)
+Source: [examples/demo.md](./examples/demo.md) → [demo.pdf](./examples/demo.pdf)
 
 ```bash
-pdfmint examples/report.md report.pdf --preset report
+pdfmint examples/demo.md demo.pdf
 ```
 
 ---
