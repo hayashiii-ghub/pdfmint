@@ -22,14 +22,14 @@ HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントフ�
 
 ## 出力例
 
-Markdown 1 枚をデフォルト設定（preset なし）で変換した出力です。フロントマター・表（数値右揃え）・callout・コードのハイライト・脚注まで、素のまま対応します。
+Markdown 1 枚を明朝（`--font serif`・preset なし）で変換した例です。フロントマター・表（数値右揃え）・callout・コードのハイライト・脚注まで、素のまま対応します。
 
-[![pdfmint の出力例](./examples/demo.png)](./examples/demo.pdf)
+**▶ PDF で見る: [examples/demo.pdf](./examples/demo.pdf)** （ソース: [demo.md](./examples/demo.md)）
 
-ソース: [examples/demo.md](./examples/demo.md) → [demo.pdf](./examples/demo.pdf)
+[![1 ページ目プレビュー](./examples/demo.png)](./examples/demo.pdf)
 
 ```bash
-pdfmint examples/demo.md demo.pdf
+pdfmint examples/demo.md demo.pdf --font serif
 ```
 
 ---

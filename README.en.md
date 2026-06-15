@@ -22,14 +22,14 @@
 
 ## Examples
 
-A single Markdown file converted with the default settings (no preset). Frontmatter, tables (with right-aligned numbers), callouts, syntax-highlighted code, and footnotes all work out of the box.
+A single Markdown file converted with serif type (`--font serif`, no preset). Frontmatter, tables (with right-aligned numbers), callouts, syntax-highlighted code, and footnotes all work out of the box.
 
-[![pdfmint example output](./examples/demo.png)](./examples/demo.pdf)
+**▶ View the PDF: [examples/demo.pdf](./examples/demo.pdf)** (source: [demo.md](./examples/demo.md))
 
-Source: [examples/demo.md](./examples/demo.md) → [demo.pdf](./examples/demo.pdf)
+[![first-page preview](./examples/demo.png)](./examples/demo.pdf)
 
 ```bash
-pdfmint examples/demo.md demo.pdf
+pdfmint examples/demo.md demo.pdf --font serif
 ```
 
 ---
