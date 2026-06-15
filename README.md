@@ -22,11 +22,13 @@ HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントフ�
 
 ## 出力例
 
-Markdown 1 枚を明朝（`--font serif`・preset なし）で変換した例です。フロントマター・表（数値右揃え）・callout・コードのハイライト・脚注まで、素のまま対応します。ソース・PDF・プレビューは [`demo/`](./demo) にまとめてあります。
+Markdown 1 枚を明朝（`--font serif`・preset なし）で変換した例です。フロントマター・表（数値右揃え）・callout・コードのハイライト・脚注まで、素のまま対応します。ソース・PDF・ページ別プレビューは [`demo/`](./demo) にまとめてあります。
 
 **▶ PDF で見る: [demo/report.pdf](./demo/report.pdf)** （ソース: [report.md](./demo/report.md)）
 
-[![1 ページ目プレビュー](./demo/report.png)](./demo/report.pdf)
+| 1 ページ目 | 2 ページ目 |
+|:---:|:---:|
+| [![demo page 1](./demo/report-1.png)](./demo/report.pdf) | [![demo page 2](./demo/report-2.png)](./demo/report.pdf) |
 
 ```bash
 pdfmint demo/report.md report.pdf --font serif

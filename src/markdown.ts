@@ -52,7 +52,18 @@ a[data-footnote-backref] { text-decoration: none; }
 .markdown-alert > :last-child { margin-bottom: 0; }
 .markdown-alert-title { display: flex; align-items: center; font-weight: 600; margin-bottom: 0.3em; }
 .markdown-alert-title svg { fill: currentColor; margin-right: 0.4em; }
-.markdown-alert-note { border-left-color: #0969da; } .markdown-alert-note .markdown-alert-title { color: #0969da; }
+/* note は差し色 (--pm-accent) を深緑として使い、縦バーと地を深緑→淡色のグラデにする。 */
+.markdown-alert-note {
+  border-left-color: transparent;
+  background-color: transparent;
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, var(--pm-accent, #4a6741) 82%, #000), color-mix(in srgb, var(--pm-accent, #4a6741) 38%, #fff)),
+    linear-gradient(90deg, color-mix(in srgb, var(--pm-accent, #4a6741) 12%, #fff), #ffffff 72%);
+  background-repeat: no-repeat, no-repeat;
+  background-size: 4px 100%, 100% 100%;
+  background-position: left top, left top;
+}
+.markdown-alert-note .markdown-alert-title { color: color-mix(in srgb, var(--pm-accent, #4a6741) 80%, #000); }
 .markdown-alert-tip { border-left-color: #1a7f37; } .markdown-alert-tip .markdown-alert-title { color: #1a7f37; }
 .markdown-alert-important { border-left-color: #8250df; } .markdown-alert-important .markdown-alert-title { color: #8250df; }
 .markdown-alert-warning { border-left-color: #9a6700; } .markdown-alert-warning .markdown-alert-title { color: #9a6700; }
@@ -83,28 +94,18 @@ body {
   line-height: var(--pm-line-height, 1.7);
   color: var(--pm-ink, #1a1a1a);
 }
-/* 差し色は深緑 (--pm-accent) を基調にし、明色は color-mix で派生させる (brand で accent を変えると全体が追従)。 */
+/* 見出しはページ末で孤立させない (break-after: avoid)。 */
 h1, h2, h3, h4 { color: var(--pm-ink, #222); margin-top: 1.5em; break-after: avoid; }
-/* h1 下線は深緑→淡色→透明のグラデ (background-image で描画。border より print 時に安定)。 */
-h1 {
-  font-size: 20pt;
-  padding-bottom: 0.28em;
-  background-image: linear-gradient(90deg, var(--pm-accent, #1d5240), color-mix(in srgb, var(--pm-accent, #1d5240) 42%, #ffffff) 55%, transparent 96%);
-  background-repeat: no-repeat;
-  background-position: left bottom;
-  background-size: 100% 3px;
-}
-h2 { font-size: 16pt; border-left: 4px solid var(--pm-accent, #1d5240); padding-left: 0.5em; }
-h3 { font-size: 14pt; color: color-mix(in srgb, var(--pm-ink, #222) 75%, var(--pm-accent, #1d5240)); }
-a { color: var(--pm-accent, #1d5240); }
+h1 { font-size: 20pt; border-bottom: 2px solid #333; padding-bottom: 0.2em; }
+h2 { font-size: 16pt; border-left: 4px solid var(--pm-accent, #4a6741); padding-left: 0.5em; }
+h3 { font-size: 14pt; }
 p { margin: 0.5em 0; }
 ul, ol { padding-left: 1.5em; }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-th, td { border: 1px solid #e3e3e3; padding: 6px 10px; text-align: left; }
+th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
 th[align="center"], td[align="center"] { text-align: center; }
 th[align="right"], td[align="right"] { text-align: right; }
-/* 表ヘッダにも淡い深緑を差す。 */
-th { background: color-mix(in srgb, var(--pm-accent, #1d5240) 9%, #ffffff); border-bottom: 2px solid var(--pm-accent, #1d5240); font-weight: 600; }
+th { background: #f5f5f5; }
 code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: "SFMono-Regular", "Menlo", monospace; }
 pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }
 pre code { background: none; padding: 0; }

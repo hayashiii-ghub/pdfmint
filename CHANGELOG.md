@@ -15,7 +15,8 @@
   - **シンタックスハイライト**: コードフェンスを highlight.js（GitHub ライトテーマ）で色付け（`marked-highlight` + `highlight.js`）
 
 ### Changed
-- 既定 Markdown CSS（preset なし）の差し色を深緑基調に刷新。`h1` の下線を深緑→淡色→透明のグラデーション（`--pm-accent` から `color-mix` で派生）にし、`h2` の縦バー・表ヘッダの罫線・リンク色も同じ深緑で統一。明色は `color-mix` で accent から自動生成するため、brand の `accent` token を変えると全体が追従する。見出しに `break-after: avoid` を付け、ページ末で見出しが孤立しないようにした（preset の見た目は不変）
+- 既定 Markdown CSS（preset なし）の `> [!NOTE]` callout を差し色（深緑）基調に変更。縦バーと地を深緑→淡色のグラデーション（`--pm-accent` から `color-mix` で派生）にし、タイトルも深緑に。brand の `accent` token を変えると追従する（他の callout 種別・見出し・表の見た目は不変）
+- 見出し（h1〜h4）に `break-after: avoid` を付け、ページ末で見出しだけが孤立しないようにした
 
 ### Fixed
 - バンドル後（`node dist/cli.js`）に `--preset memo|report|letter` が CSS ファイルを見つけられず失敗していたのを修正（`PRESETS_DIR` が `dist` を指す一方で CSS は `dist/presets/` にあった）。source 実行と bundle 実行の両方の CSS 所在を探索するようにし、`pack:smoke` にビルド済み dist での実 preset 変換ガードを追加
