@@ -14,6 +14,7 @@ HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントフ�
 - 📡 `--json` フラグで構造化出力 → エージェントが結果をパース可能
 - ⚙️ 構造化エラー(`code` + `hint`)と `--expect-pages` で自動リトライ・品質チェックがしやすい
 - 📝 HTML / Markdown / batch 変換に対応し、agent生成ドキュメントをまとめてPDF化できる
+- ✍️ Markdown は GFM に加え **フロントマター除去・脚注・GitHub callout・シンタックスハイライト** に対応
 - 🎨 日本語フォントを綺麗にレンダリング(Noto Sans JP 優先、Noto Serif JP も選択可)
 - 🔧 TypeScript で実装、Bun 開発 / Node.js 22+ 配布のハイブリッド構成
 
@@ -135,6 +136,32 @@ PDF と PNG を同時生成した場合:
 }
 ```
 
+## 対応Markdown記法
+
+GFM（表・タスクリスト・打消し・自動リンク）に加えて以下に対応しています。すべてのpreset・既定CSS・`--css` で有効です。
+
+- **フロントマター**: 先頭の `--- ... ---` は本文に漏らさず除去。`title:` は文書タイトル（`<title>`）に使われます。それ以外のkeyはここでは無視（見た目の統一は別ファイル `brand.md` で行います）
+- **脚注**: `本文[^1]` ＋ `[^1]: 注釈` で上付き参照＋文書末の脚注セクション（戻りリンク付き）
+- **callout（GitHub形式）**: `> [!NOTE]` / `[!TIP]` / `[!IMPORTANT]` / `[!WARNING]` / `[!CAUTION]` を色付きの注意ブロックに変換
+- **シンタックスハイライト**: コードフェンスを highlight.js（GitHubライトテーマ）で色付け。言語指定（` ```ts `）で文法を選択、未指定/未知の言語はプレーン表示
+
+````markdown
+---
+title: 月次レポート
+---
+
+本文に脚注を付けられます[^1]。
+
+[^1]: これは脚注です。
+
+> [!NOTE]
+> 補足はこの形式で目立たせられます。
+
+```ts
+const html = markdownToHtml("# Hello", { font: "serif" })
+```
+````
+
 ## brand profile（見た目の統一）
 
 色・書体・余白・用紙サイズを `brand.md` に一度書いておくと、Markdown変換すべてに自動適用されます（毎回フラグ指定が不要）。`./pdfmint.brand.md`（プロジェクト）→ `~/.config/pdfmint/brand.md`（グローバル）の順に自動探索。
@@ -176,7 +203,7 @@ bun run build  # dist/cli.js 生成
 ## 注意
 
 - **画像・フォント**: HTML 内の `src` は絶対パスまたは `data:` URL にしてください(Puppeteer の `file://` 環境では相対パスのリゾルブが期待通り動かないケースがあります)
-- **印刷用 CSS**: `@page` ルールで余白等を HTML 側に書いておくと、`--margin` のデフォルト 0 と組み合わせて綺麗に印刷できます
+- **余白**: Markdown 入力では `--margin`（フラグ優先 > brand `margin` token > preset 既定）が PDF・PNG の両方に同じ値で効きます（内部的に `@page` と画面用 padding が同一の `--pm-margin` を参照）。値は単位付き長さ（例 `18mm` / `1in`）または `0`。HTML 入力では HTML 側の `@page` ルールが優先され、`@page` に margin が無いときだけ `--margin` が効きます
 - **1枚ものの帳票**: `--expect-pages 1` を付けると、意図せず2ページ目に流れたPDFを検出できます
 - **画像納品**: `--png` と `--viewport` / `--scale` を使うと、同じHTMLから共有用PNGと提出用PDFを同時に作れます
 - **日本語フォント**: Markdown 入力時は `--font sans` が既定で Noto Sans JP を優先します。明朝系にしたい場合は `--font serif` で Noto Serif JP を優先します。納品物の書体・余白・見出しを固定したい場合は `--css report.css` を使ってCSSを指定してください。HTML 入力時は自分で `<style>` に指定してください

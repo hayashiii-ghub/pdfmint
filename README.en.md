@@ -14,6 +14,7 @@
 - 📡 Structured output via `--json` so agents can parse conversion results
 - ⚙️ Structured errors (`code` + `hint`) and `--expect-pages` make retries and quality checks easier
 - 📝 Supports HTML, Markdown, and batch conversion for agent-generated document sets
+- ✍️ Markdown supports GFM plus **frontmatter stripping, footnotes, GitHub callouts, and syntax highlighting**
 - 🎨 Beautiful Japanese rendering (Noto Sans JP first; Noto Serif JP selectable)
 - 🔧 TypeScript implementation with Bun for development and Node.js 22+ for distribution
 
@@ -115,6 +116,15 @@ When generating PDF and PNG together:
 }
 ```
 
+## Supported Markdown syntax
+
+In addition to GFM (tables, task lists, strikethrough, autolinks), the following are supported, and work with every preset, the default CSS, and `--css`:
+
+- **Frontmatter**: a leading `--- ... ---` block is stripped from the body (never leaks into output). `title:` becomes the document title (`<title>`). Other keys are ignored here (the consistent look is configured separately via `brand.md`).
+- **Footnotes**: `text[^1]` + `[^1]: note` renders a superscript reference plus a footnotes section at the end of the document, with back-references.
+- **Callouts (GitHub alerts)**: `> [!NOTE]` / `[!TIP]` / `[!IMPORTANT]` / `[!WARNING]` / `[!CAUTION]` become colored, titled admonition blocks.
+- **Syntax highlighting**: fenced code blocks are highlighted with highlight.js (GitHub-light theme). The language hint (` ```ts `) selects the grammar; unknown/no language falls back to plain escaped text.
+
 ## Brand profile
 
 Define your look (colors, font, spacing, paper) once in a `brand.md` and it applies to every Markdown conversion automatically — no per-document flags. Auto-discovered from `./pdfmint.brand.md` (project), then `~/.config/pdfmint/brand.md` (global).
@@ -141,7 +151,7 @@ Free notes below the frontmatter are ignored by the renderer.
 ## Notes
 
 - **Images and fonts**: use absolute paths or `data:` URLs in HTML — Puppeteer's `file://` resolution may not behave as expected for relative paths.
-- **Print CSS**: declare `@page` rules and margins in your HTML to combine with the default `--margin 0` for clean output.
+- **Margins**: for Markdown input, `--margin` (flag > brand `margin` token > preset default) applies to both the PDF and the PNG with the same value (internally the `@page` rule and the screen padding share one `--pm-margin` variable). Values must be a length with unit (e.g. `18mm` / `1in`) or `0`. For HTML input, the HTML's own `@page` rule wins; `--margin` only applies when `@page` declares no margin.
 - **Single-page reports**: pass `--expect-pages 1` to catch accidental second pages.
 - **Image deliverables**: use `--png` with `--viewport` / `--scale` to produce a shareable PNG and printable PDF from the same HTML.
 - **Japanese fonts**: Markdown input defaults to `--font sans`, prioritizing Noto Sans JP. Use `--font serif` to prioritize Noto Serif JP. Use `--css report.css` when you need fixed typography, margins, and heading styles for deliverables. For HTML input, set fonts in your own `<style>`.

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process"
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync } from "node:fs"
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -85,6 +85,17 @@ try {
 
   const version = run(bin, ["--version"], installDir).trim()
   assert(version === pkg.version, `expected installed CLI version ${pkg.version}, got ${version}`)
+
+  // バンドル済み dist で preset 変換が実際に動くこと (CSS の所在解決の回帰ガード)。
+  // 過去 PRESETS_DIR が dist を指すのに CSS は dist/presets/ にあり --preset が ENOENT で落ちていた。
+  const distCli = join(root, "dist", "cli.js")
+  const presetMd = join(packTmp, "preset-smoke.md")
+  const presetPdf = join(packTmp, "preset-smoke.pdf")
+  writeFileSync(presetMd, "# 見出し\n\n本文です。\n", "utf-8")
+  const presetOut = run(process.execPath, [distCli, presetMd, presetPdf, "--preset", "report", "--json"])
+  const presetResult = JSON.parse(presetOut) as { success: boolean }
+  assert(presetResult.success === true, `dist --preset 変換が失敗しました: ${presetOut.trim()}`)
+  assert(existsSync(presetPdf), `dist --preset 変換の PDF が生成されませんでした: ${presetPdf}`)
 } finally {
   rmSync(packTmp, { recursive: true, force: true })
   rmSync(npmCache, { recursive: true, force: true })
