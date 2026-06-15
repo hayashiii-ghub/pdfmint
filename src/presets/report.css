@@ -1,4 +1,4 @@
-@page { size: A4; margin: 18mm; }
+@page { size: A4; margin: var(--pm-margin, 18mm); }
 
 /* 見出し: 線ではなくウェイトと余白で階層を作る。アクセントは h2 の文字色 1 点のみ。 */
 h1, h2, h3, h4 { color: var(--pm-ink, #1a1a1a); break-after: avoid; }

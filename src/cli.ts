@@ -54,7 +54,7 @@ Docs:
   https://github.com/hayashiii-ghub/pdfmint
 `
 
-interface ParsedArgs {
+export interface ParsedArgs {
   positional: string[]
   json: boolean
   format?: string
@@ -188,6 +188,21 @@ function parseViewport(value: string | undefined): { width: number; height: numb
   return { width, height }
 }
 
+// margin は Puppeteer の margin と Markdown の --pm-margin (CSS 変数) の両方へ流れる。
+// CSS へ注入するため、単位付きの長さ (または 0) のみ許可して break-out を防ぐ。
+const MARGIN_RE = /^(0|[0-9]*\.?[0-9]+(pt|px|mm|cm|in))$/
+
+function validateMargin(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined
+  if (!MARGIN_RE.test(value)) {
+    throw invalidOption(
+      `margin が不正です: ${value}`,
+      "--margin には単位付きの長さ (例 18mm / 1in) または 0 を指定してください。"
+    )
+  }
+  return value
+}
+
 function parseFontPreset(value: string | undefined): MarkdownFontPreset | undefined {
   if (!value) return undefined
   if (value === "sans" || value === "serif") return value
@@ -221,19 +236,21 @@ function parseFormat(value: string | undefined): ConvertOptions["format"] | unde
   )
 }
 
-function buildOptions(args: ParsedArgs): ConvertOptions {
+export function buildOptions(args: ParsedArgs): ConvertOptions {
   const opts: ConvertOptions = {}
   // precedence: 明示 CLI フラグ > brand token > 既定値。
   const brand = resolveBrand({ brandPath: args.brand, noBrand: args.noBrand, cwd: process.cwd() })
   const format = parseFormat(args.format) ?? brand.tokens.paper
   if (format) opts.format = format
-  const margin = args.margin ?? brand.tokens.margin
+  // margin は Puppeteer (HTML 入力) と --pm-margin (Markdown の @page / screen padding) の両方へ流す。
+  const margin = validateMargin(args.margin) ?? brand.tokens.margin
   if (margin) opts.margin = margin
   const font = parseFontPreset(args.font) ?? brand.tokens.font
   if (font) opts.font = font
   if (args.preset) opts.preset = parseMarkdownPreset(args.preset)
   if (args.css) opts.css = args.css
-  const brandCss = brandToCss(brand.tokens)
+  // --pm-margin は brand token だけでなく解決済み margin (フラグ優先) から出す。
+  const brandCss = brandToCss({ ...brand.tokens, margin })
   if (brandCss) opts.brandCss = brandCss
   opts.brandSource = brand.source
   if (args.landscape) opts.landscape = true
@@ -380,5 +397,9 @@ async function main(argv: string[]): Promise<number> {
   }
 }
 
-const code = await main(process.argv.slice(2))
-process.exit(code)
+// エントリとして実行されたときだけ走らせる (テストから import しても main を起動しない)。
+// bun は import.meta.main を持つ。node バンドル (dist/cli.js) では undefined なので ?? true で常時実行。
+if (import.meta.main ?? true) {
+  const code = await main(process.argv.slice(2))
+  process.exit(code)
+}

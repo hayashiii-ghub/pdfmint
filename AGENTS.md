@@ -32,6 +32,17 @@ Always pass `--json` when invoked by an agent for structured output.
 - `.md` / `.markdown` → converted to HTML internally with default Japanese-friendly CSS, then to PDF
 - Other extensions → error `UNSUPPORTED_INPUT`
 
+## Markdown syntax
+
+In addition to GFM (tables, task lists, strikethrough, autolinks), the following are supported:
+
+- **Frontmatter**: leading `--- ... ---` is stripped from the body (never leaks into the output). `title:` is used as the HTML document title. Other keys are ignored here (brand tokens are read separately from `brand.md`, not the document frontmatter).
+- **Footnotes**: `text[^1]` + `[^1]: note` renders a superscript reference and a footnotes section at the end of the document with back-references.
+- **Callouts (GitHub alerts)**: `> [!NOTE]` / `[!TIP]` / `[!IMPORTANT]` / `[!WARNING]` / `[!CAUTION]` render as colored, titled admonition blocks.
+- **Syntax highlighting**: fenced code blocks are highlighted via highlight.js (GitHub-light theme). The language hint (` ```ts `) selects the grammar; unknown/no language falls back to plain escaped text.
+
+These work with every preset, the default CSS, and `--css` (extension styles are injected first so a custom CSS file can override them).
+
 ## Markdown presets
 
 Markdown input supports document presets and font overrides:

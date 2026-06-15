@@ -19,7 +19,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\" --external puppeteer --external marked --external glob && rm -rf dist/presets && cp -r src/presets dist/presets",
+    "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\" --external puppeteer --external marked --external marked-footnote --external marked-highlight --external highlight.js --external marked-alert --external glob && rm -rf dist/presets && cp -r src/presets dist/presets",
     "test": "bun test --timeout 15000",
     "typecheck": "tsc --noEmit",
     "pack:smoke": "bun scripts/pack-smoke.ts",
@@ -50,7 +50,11 @@
   },
   "dependencies": {
     "glob": "^13.0.6",
+    "highlight.js": "^11.11.1",
     "marked": "^18.0.5",
+    "marked-alert": "^2.1.2",
+    "marked-footnote": "^1.4.0",
+    "marked-highlight": "^2.2.4",
     "puppeteer": "^25.1.0"
   },
   "devDependencies": {
