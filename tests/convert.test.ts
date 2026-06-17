@@ -6,6 +6,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 const FIXTURES = join(import.meta.dir, "fixtures")
+/** CI の初回 Chromium 起動は 20s を超えることがある */
+const BROWSER_TEST_TIMEOUT_MS = 45_000
 
 function newTmpDir() {
   return mkdtempSync(join(tmpdir(), "pdfmint-convert-"))
@@ -19,7 +21,7 @@ test("HTMLファイルからPDFを生成する", async () => {
   // PDF magic number "%PDF" を確認
   const head = readFileSync(out).subarray(0, 4).toString()
   expect(head).toBe("%PDF")
-})
+}, { timeout: BROWSER_TEST_TIMEOUT_MS })
 
 test("入力ファイルが存在しない場合 INPUT_NOT_FOUND をスロー", async () => {
   const out = join(newTmpDir(), "out.pdf")
@@ -35,7 +37,7 @@ test("出力先ディレクトリが無い場合は自動作成して PDF を生
   const out = join(base, "nested", "deep", "out.pdf")
   await convertHtmlToPdf(join(FIXTURES, "sample.html"), out, {})
   expect(existsSync(out)).toBe(true)
-})
+}, { timeout: BROWSER_TEST_TIMEOUT_MS })
 
 test("用紙サイズオプションが反映される", async () => {
   const out = join(newTmpDir(), "out-a3.pdf")
@@ -43,7 +45,7 @@ test("用紙サイズオプションが反映される", async () => {
   expect(existsSync(out)).toBe(true)
   // A3はA4より大きいので、ファイルサイズも大きいことが期待される（厳密な検証は別途）
   expect(statSync(out).size).toBeGreaterThan(1000)
-})
+}, { timeout: BROWSER_TEST_TIMEOUT_MS })
 
 test("Markdown ファイルから PDF を生成する", async () => {
   const out = join(newTmpDir(), "out-md.pdf")
@@ -51,7 +53,7 @@ test("Markdown ファイルから PDF を生成する", async () => {
   expect(existsSync(out)).toBe(true)
   const head = readFileSync(out).subarray(0, 4).toString()
   expect(head).toBe("%PDF")
-})
+}, { timeout: BROWSER_TEST_TIMEOUT_MS })
 
 test("未対応の拡張子は UNSUPPORTED_INPUT をスロー", async () => {
   const out = join(newTmpDir(), "out.pdf")

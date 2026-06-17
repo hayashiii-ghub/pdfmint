@@ -101,7 +101,7 @@ th[align="right"], td[align="right"] { text-align: right; }
 /* 表ヘッダも深緑テーマに揃える (淡い深緑地 + 深緑の下罫線)。 */
 th { background: color-mix(in srgb, var(--pm-accent, #2f5d4e) 8%, #ffffff); border-bottom: 2px solid var(--pm-accent, #2f5d4e); font-weight: 600; }
 code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: "SFMono-Regular", "Menlo", monospace; }
-pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; }
+pre { background: #f4f4f4; padding: 12px; border-radius: 4px; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; overflow-x: visible; }
 pre code { background: none; padding: 0; }
 blockquote { border-left: 4px solid #ddd; padding-left: 1em; color: #666; margin: 1em 0; }
 /* PNG (screen) 用の余白: @page は印刷にしか効かないため、screen では同じ余白を padding で再現する。 */
