@@ -175,3 +175,13 @@ test("letter preset は中央寄せ h1 を含む", () => {
   const html = markdownToHtml("# テスト", { preset: "letter" })
   expect(html).toContain("text-align: center")
 })
+
+test("pre 内の長い行を PDF 幅に折り返す CSS を全 preset と legacy が含む", () => {
+  for (const preset of [undefined, "memo", "report", "letter"] as const) {
+    const html = markdownToHtml("```text\nlong line\n```", preset ? { preset } : {})
+    expect(html).toContain("white-space: pre-wrap")
+    expect(html).toContain("overflow-wrap: anywhere")
+    expect(html).toContain("word-break: break-word")
+    expect(html).toContain("overflow-x: visible")
+  }
+})
