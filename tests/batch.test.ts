@@ -5,6 +5,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 const FIXTURES = join(import.meta.dir, "fixtures")
+/** CI の初回 Chromium 起動は 20s を超えることがある */
+const BROWSER_TEST_TIMEOUT_MS = 45_000
 
 function newTmpDir() {
   return mkdtempSync(join(tmpdir(), "pdfmint-batch-"))
@@ -21,7 +23,7 @@ test("複数HTMLファイルを一括変換する", async () => {
   expect(errors).toHaveLength(0)
   expect(existsSync(join(outDir, "a.pdf"))).toBe(true)
   expect(existsSync(join(outDir, "b.pdf"))).toBe(true)
-})
+}, { timeout: BROWSER_TEST_TIMEOUT_MS })
 
 test("マッチするファイルがない場合 BATCH_NO_MATCHES をスロー", async () => {
   const outDir = newTmpDir()
@@ -43,7 +45,7 @@ test("出力先ディレクトリが無い場合は自動作成して batch 変�
   expect(errors).toHaveLength(0)
   expect(browser_reused).toBe(true)
   expect(existsSync(join(outDir, "a.pdf"))).toBe(true)
-})
+}, { timeout: BROWSER_TEST_TIMEOUT_MS })
 
 test("一部のファイルが失敗しても他は成功する（エラー集約）", async () => {
   const inDir = newTmpDir()
@@ -61,4 +63,4 @@ test("一部のファイルが失敗しても他は成功する（エラー集�
   expect(results[0]?.output).toContain("valid.pdf")
   expect(errors[0]?.code).toBe("UNSUPPORTED_INPUT")
   expect(errors[0]?.input).toContain("invalid.txt")
-})
+}, { timeout: BROWSER_TEST_TIMEOUT_MS })
