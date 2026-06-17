@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-06-17
+
+### Fixed
+- Markdown の fenced code block 内に長い1行（ファイルパスなど）がある場合、PDF 出力で横方向に切れて読めなくなる問題を修正。`pre` に `pre-wrap` / `overflow-wrap: anywhere` を追加（全 preset と legacy CSS）
+- CI で初回 Chromium 起動が 15s を超えて `convert.test` が落ちる flake を修正（Chromium 依存テストに 45s タイムアウト）
+
 ## [0.5.0] - 2026-06-15
 
 ### Added
