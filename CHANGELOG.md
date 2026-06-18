@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+### Fixed
+- `batch` 変換で、別ディレクトリの同名ファイルや同名異拡張子（`a/x.html` と `b/x.md` など）が同一 `.pdf` に解決され、**後勝ちで黙って上書き**されていた問題を修正。出力名は先勝ちで変換し、衝突した入力は変換せず `BATCH_OUTPUT_COLLISION` として報告する（`--json` の `errors[]` に出て exit code 1 になる）
+
+### Changed
+- 日本語フォントスタック定義（`FONT_STACKS` と同梱 `@font-face` の family）を `src/fonts/stacks.ts` に単一化。`@font-face` の family が常にスタック先頭に一致することを構造的に保証し、定義の分散による「同梱フォントが無言で無効化される」回帰を防ぐ（出力・挙動は不変）
+
 ## [0.6.0] - 2026-06-18
 
 ### Added
