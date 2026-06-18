@@ -2,7 +2,7 @@
 import { existsSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import type { MarkdownFontPreset } from "../markdown"
+import { FONT_STACKS, type MarkdownFontPreset } from "../fonts/stacks"
 
 export type MarkdownPreset = "memo" | "report" | "letter"
 
@@ -14,11 +14,6 @@ export const MARKDOWN_PRESETS = ["memo", "report", "letter"] as const
 // import.meta.url の dirname は前者では src/presets、後者では dist を指すため、両候補を探索する。
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url))
 const CSS_DIRS = [MODULE_DIR, join(MODULE_DIR, "presets")]
-
-const FONT_STACKS: Record<MarkdownFontPreset, string> = {
-  sans: `"Noto Sans JP", "Noto Sans CJK JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif`,
-  serif: `"Noto Serif JP", "Noto Serif CJK JP", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif`,
-}
 
 const PRESET_VARS: Record<MarkdownPreset, { fontSize: string; lineHeight: string }> = {
   memo: { fontSize: "11pt", lineHeight: "1.7" },

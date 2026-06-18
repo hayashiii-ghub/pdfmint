@@ -12,6 +12,7 @@
 import { existsSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
+import { BUNDLED_FONTS } from "./stacks"
 
 // font ファイルの所在は実行形態で変わる (presets/index.ts と同じ二候補方式):
 //   source 実行 (bun src/cli.ts)  … この index.ts と同階層 (src/fonts/*.ttf)
@@ -27,16 +28,6 @@ function resolveFontPath(file: string): string {
   // どちらにも無ければ最初の候補を返す (file:// が解決できず font はシステムへフォールバックする)。
   return join(FONT_DIRS[0]!, file)
 }
-
-interface BundledFont {
-  family: string
-  file: string
-}
-
-const BUNDLED_FONTS: BundledFont[] = [
-  { family: "Noto Sans JP", file: "NotoSansJP.ttf" },
-  { family: "Noto Serif JP", file: "NotoSerifJP.ttf" },
-]
 
 /** 同梱 font の @font-face 宣言群を返す。CSS の先頭に注入する。
  *  variable font (wght 100..900) を 1 family 1 ファイルで持つため weight ごとの宣言は不要。 */

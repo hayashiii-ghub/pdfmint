@@ -16,6 +16,7 @@ export type ErrorCode =
   | "INVALID_PRESET"
   | "PAGE_COUNT_MISMATCH"
   | "BATCH_NO_MATCHES"
+  | "BATCH_OUTPUT_COLLISION"
   | "BRAND_INVALID"
 
 export interface ErrorContext {

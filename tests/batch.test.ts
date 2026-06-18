@@ -47,6 +47,22 @@ test("出力先ディレクトリが無い場合は自動作成して batch 変�
   expect(existsSync(join(outDir, "a.pdf"))).toBe(true)
 }, { timeout: BROWSER_TEST_TIMEOUT_MS })
 
+test("同名異拡張子の出力衝突は先勝ち変換 + BATCH_OUTPUT_COLLISION 報告（黙って上書きしない）", async () => {
+  const inDir = newTmpDir()
+  const outDir = newTmpDir()
+  // x.html と x.md は両方 x.pdf に解決され衝突する
+  copyFileSync(join(FIXTURES, "sample.html"), join(inDir, "x.html"))
+  const { writeFileSync } = await import("node:fs")
+  writeFileSync(join(inDir, "x.md"), "# x")
+
+  const { results, errors } = await convertBatch(`${inDir}/*`, outDir, {})
+  // 先勝ちで 1 件だけ変換、もう 1 件は衝突として報告
+  expect(results).toHaveLength(1)
+  expect(errors).toHaveLength(1)
+  expect(errors[0]?.code).toBe("BATCH_OUTPUT_COLLISION")
+  expect(existsSync(join(outDir, "x.pdf"))).toBe(true)
+}, { timeout: BROWSER_TEST_TIMEOUT_MS })
+
 test("一部のファイルが失敗しても他は成功する（エラー集約）", async () => {
   const inDir = newTmpDir()
   const outDir = newTmpDir()
