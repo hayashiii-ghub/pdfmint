@@ -185,3 +185,19 @@ test("pre 内の長い行を PDF 幅に折り返す CSS を全 preset と legacy
     expect(html).toContain("overflow-x: visible")
   }
 })
+
+test("同梱 font の @font-face が全経路 (legacy/preset/custom) で注入され、ファイルが実在する", () => {
+  const { existsSync } = require("node:fs")
+  const { fileURLToPath } = require("node:url")
+  for (const opts of [{}, { preset: "report" }, { preset: "letter", font: "serif" }, { customCss: "body{color:red}" }] as const) {
+    const html = markdownToHtml("# 日本語の見出し\n\n本文。", opts)
+    // family 名は FONT_STACKS 先頭と一致させて font-family を変えずに同梱版へ解決させる
+    expect(html).toContain('@font-face')
+    expect(html).toContain('font-family: "Noto Sans JP"')
+    expect(html).toContain('font-family: "Noto Serif JP"')
+    // file:// URL が指す .ttf が実在すること (= 同梱漏れ / パス解決バグの回帰ガード)
+    for (const m of html.matchAll(/src: url\("(file:\/\/[^"]+\.ttf)"\)/g)) {
+      expect(existsSync(fileURLToPath(m[1]))).toBe(true)
+    }
+  }
+})

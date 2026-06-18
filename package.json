@@ -19,7 +19,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\" --external puppeteer --external marked --external marked-footnote --external marked-highlight --external highlight.js --external marked-alert --external glob && rm -rf dist/presets && cp -r src/presets dist/presets",
+    "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\" --external puppeteer --external marked --external marked-footnote --external marked-highlight --external highlight.js --external marked-alert --external glob && rm -rf dist/presets && cp -r src/presets dist/presets && rm -rf dist/fonts && cp -r src/fonts dist/fonts",
     "test": "bun test --timeout 15000",
     "typecheck": "tsc --noEmit",
     "pack:smoke": "bun scripts/pack-smoke.ts",

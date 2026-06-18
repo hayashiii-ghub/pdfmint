@@ -56,8 +56,9 @@ pdfmint report.md report.pdf --css report.css --json
 ```
 
 - `--preset memo|report|letter` applies a simple Japanese document stylesheet.
-- `--font sans` is the default and prioritizes Noto Sans JP (`letter` defaults to serif unless overridden).
-- `--font serif` prioritizes Noto Serif JP for more formal reports.
+- `--font sans` is the default and uses the bundled Noto Sans JP (`letter` defaults to serif unless overridden).
+- `--font serif` uses the bundled Noto Serif JP for more formal reports.
+- Noto Sans JP / Noto Serif JP are **bundled** and injected via `@font-face`, so Markdown output is identical on any machine regardless of installed fonts. (This is for reproducibility, not file size — Chromium emits CJK glyphs as Type3 fonts, so PDFs of Japanese text stay relatively large no matter the font.)
 - `--css <file.css>` replaces the preset/default Markdown CSS with a file.
 - HTML input is not modified; set fonts in the HTML `<style>` block.
 
