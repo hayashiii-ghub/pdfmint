@@ -34,6 +34,10 @@ export async function convertBatch(
 
   const results: ConvertResult[] = []
   const errors: BatchErrorEntry[] = []
+  // 出力名は basename(入力) + .pdf で決まるため、別ディレクトリの同名や同名異拡張子
+  // (a/x.html と b/x.md など) は同一 .pdf に潰れて黙って上書きされる。先勝ちで変換し、
+  // 後続の衝突は変換せず BATCH_OUTPUT_COLLISION として報告する (データ消失を防ぐ)。
+  const claimedOutputs = new Map<string, string>()
   const session = new BrowserSession()
 
   try {
@@ -41,6 +45,16 @@ export async function convertBatch(
     for (const input of matches) {
       const base = basename(input, extname(input))
       const output = join(outDirAbs, `${base}.pdf`)
+      const claimedBy = claimedOutputs.get(output)
+      if (claimedBy !== undefined) {
+        errors.push({
+          input,
+          code: "BATCH_OUTPUT_COLLISION",
+          message: `出力先 ${output} が ${claimedBy} と衝突するため変換をスキップしました（上書き防止）。入力を別ディレクトリでなく一意な名前にするか個別に変換してください。`,
+        })
+        continue
+      }
+      claimedOutputs.set(output, input)
       try {
         const r = await convertHtmlToPdf(input, output, options, session)
         results.push(r)

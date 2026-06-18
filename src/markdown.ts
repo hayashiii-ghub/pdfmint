@@ -6,8 +6,9 @@ import hljs from "highlight.js/lib/common"
 import markedAlert from "marked-alert"
 import { presetCss, type MarkdownPreset } from "./presets/index"
 import { fontFaceCss } from "./fonts/index"
+import { FONT_STACKS, type MarkdownFontPreset } from "./fonts/stacks"
 
-export type MarkdownFontPreset = "sans" | "serif"
+export type { MarkdownFontPreset } from "./fonts/stacks"
 
 export interface MarkdownOptions {
   font?: MarkdownFontPreset
@@ -16,11 +17,6 @@ export interface MarkdownOptions {
   cssPath?: string
   /** brand profile 由来の :root 変数ブロック。常に先頭へ prepend する。 */
   brandCss?: string
-}
-
-const FONT_STACKS: Record<MarkdownFontPreset, string> = {
-  sans: `"Noto Sans JP", "Noto Sans CJK JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif`,
-  serif: `"Noto Serif JP", "Noto Serif CJK JP", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif`,
 }
 
 /** 拡張記法 (脚注 / GitHub callout / シンタックスハイライト) を有効化した marked インスタンス。
