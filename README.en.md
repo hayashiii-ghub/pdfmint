@@ -15,7 +15,7 @@
 - ⚙️ Structured errors (`code` + `hint`) and `--expect-pages` make retries and quality checks easier
 - 📝 Supports HTML, Markdown, and batch conversion for agent-generated document sets
 - ✍️ Markdown supports GFM plus **frontmatter stripping, footnotes, GitHub callouts, and syntax highlighting**
-- 🎨 Beautiful Japanese rendering (Noto Sans JP first; Noto Serif JP selectable)
+- 🎨 **Bundled** Japanese fonts (Noto Sans JP / Noto Serif JP) for identical output on any machine (`--font sans|serif`)
 - 🔧 TypeScript implementation with Bun for development and Node.js 22+ for distribution
 
 ---

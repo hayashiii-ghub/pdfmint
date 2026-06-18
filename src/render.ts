@@ -81,6 +81,10 @@ async function renderOnPage(
     const gotoStart = Date.now()
     try {
       await page.goto(`file://${renderPath}`, { waitUntil: "domcontentloaded" })
+      // @font-face (同梱 font 含む) の読み込み完了を待つ。domcontentloaded は font load より
+      // 先に発火しうるため、待たないと最初の描画で fallback font が使われる恐れがある。
+      // web font が無い HTML では即時に解決する。
+      await page.evaluate(() => document.fonts.ready)
     } catch (err) {
       throw new PdfMintError(
         "PAGE_LOAD_FAILED",

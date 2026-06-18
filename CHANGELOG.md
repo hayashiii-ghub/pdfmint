@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+### Added
+- **日本語フォント (Noto Sans JP / Noto Serif JP) を同梱**し、Markdown 変換時に `@font-face` で読み込むようにした。システムにインストールされたフォントに依存せず、**どの環境でも同じ見た目の出力**になる（Noto 未導入環境での Hiragino 等へのフォールバックを解消）。`--font sans|serif` の双方をカバー。フォントは OFL-1.1（`dist/fonts/OFL.txt` に同梱）。
+  - **注意（サイズは変わりません）**: これは再現性のための変更であって軽量化ではない。Chromium の `page.pdf()` は CJK グリフを Type3 フォントとして焼くため、同梱フォントを使っても PDF のサイズ・描画コストは変わらない。背景は `docs/troubleshooting.md` を参照。
+- `.html` 入力には同梱フォントを注入しない（HTML 側が `font-family` を完全に制御する）。
+
+### Fixed
+- Markdown 変換時、`@font-face`（同梱フォント）の読み込み完了を待ってから PDF/PNG を描画するようにした（`document.fonts.ready`）。待たないと初回描画で fallback フォントが使われる競合があった。
+
 ## [0.5.1] - 2026-06-17
 
 ### Fixed

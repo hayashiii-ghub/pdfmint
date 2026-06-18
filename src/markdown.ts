@@ -5,6 +5,7 @@ import { markedHighlight } from "marked-highlight"
 import hljs from "highlight.js/lib/common"
 import markedAlert from "marked-alert"
 import { presetCss, type MarkdownPreset } from "./presets/index"
+import { fontFaceCss } from "./fonts/index"
 
 export type MarkdownFontPreset = "sans" | "serif"
 
@@ -114,8 +115,10 @@ blockquote { border-left: 4px solid #ddd; padding-left: 1em; color: #666; margin
 function resolveCss(options: MarkdownOptions): string {
   // brand の :root 変数は customCss escape hatch でも参照できるよう常に先頭に置く。
   // EXTENSIONS_CSS は preset 非依存の拡張要素 (脚注/callout/hljs) の土台。preset/custom より前に置き上書きを許す。
+  // 同梱 font の @font-face は最先頭に置き、preset/legacy/custom いずれの経路でも "Noto Sans JP" /
+  // "Noto Serif JP" が同梱版に解決されるようにする (font-family 文字列は変えない)。
   const brand = options.brandCss ?? ""
-  const base = brand + EXTENSIONS_CSS
+  const base = fontFaceCss() + "\n" + brand + EXTENSIONS_CSS
   if (options.customCss) return base + options.customCss
   const font = options.font ?? "sans"
   if (options.preset) {

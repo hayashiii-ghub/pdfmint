@@ -15,7 +15,7 @@ HTML/Markdown を綺麗な日本語PDFに変換する **AIエージェントフ�
 - ⚙️ 構造化エラー(`code` + `hint`)と `--expect-pages` で自動リトライ・品質チェックがしやすい
 - 📝 HTML / Markdown / batch 変換に対応し、agent生成ドキュメントをまとめてPDF化できる
 - ✍️ Markdown は GFM に加え **フロントマター除去・脚注・GitHub callout・シンタックスハイライト** に対応
-- 🎨 日本語フォントを綺麗にレンダリング(Noto Sans JP 優先、Noto Serif JP も選択可)
+- 🎨 日本語フォント(Noto Sans JP / Noto Serif JP)を**同梱**。どの環境でも同じ見た目の出力(`--font sans|serif`)
 - 🔧 TypeScript で実装、Bun 開発 / Node.js 22+ 配布のハイブリッド構成
 
 ---
