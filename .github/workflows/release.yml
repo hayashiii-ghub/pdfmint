@@ -1,0 +1,83 @@
+name: Release
+
+# v* タグの push で npm に publish する。
+# 認証は OIDC trusted publishing（トークン不要）。事前に npmjs.com 側で
+# @hayashiii/pdfmint の Trusted Publisher（repo: hayashiii-ghub/pdfmint,
+# workflow: release.yml）を登録しておくこと。
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # GitHub Release 作成に必要
+  id-token: write # OIDC trusted publishing に必須
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # publish 用の node / npm。registry-url は付けない
+      # （空トークンの .npmrc が書かれて OIDC を妨げるため）
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # trusted publishing 対応の npm を保証（>= 11.5.1）
+      - name: Ensure recent npm
+        run: npm install -g npm@latest
+
+      # puppeteer の Chromium は bun install の postinstall で取得される
+      # （test.yml と同じ。別途 browser install ステップは不要）
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # publish 前のゲート（package.json の prepublishOnly と同じ内容を bun で実行）
+      - name: Typecheck
+        run: bun run typecheck
+
+      # timeout は package.json の test script に一元化（CI の Chromium cold-launch flake 対策）
+      - name: Unit tests
+        run: bun run test
+
+      - name: Build
+        run: bun run build
+
+      - name: Verify npm package
+        run: bun run pack:smoke
+
+      - name: Verify tag matches package.json version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg=$(node -p "require('./package.json').version")
+          if [ "$tag" != "$pkg" ]; then
+            echo "tag $tag != package.json $pkg"; exit 1
+          fi
+          echo "OK: $tag"
+
+      # OIDC を自動検出してトークンなしで publish（provenance も付与される）。
+      # ゲートは上で実行済みなので prepublishOnly の二重実行は --ignore-scripts で回避。
+      - name: Publish to npm (OIDC trusted publishing)
+        run: npm publish --ignore-scripts
+
+      # publish 成功後に GitHub Release を作成（notes は CHANGELOG の該当版から）。
+      # 既存なら作り直さない（タグ再 push / ジョブ再実行で冪等）。
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          notes=$(awk -v v="$ver" '$0 ~ "^## \\[" v "\\]" {f=1;next} f && /^## \[/ {exit} f {print}' CHANGELOG.md)
+          [ -z "$notes" ] && notes="Release $GITHUB_REF_NAME"
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists, skipping."
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+              --title "$GITHUB_REF_NAME" --notes "$notes" --latest
+          fi
