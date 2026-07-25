@@ -53,11 +53,20 @@ try {
 
   for (const required of [
     "dist/cli.js",
-    "dist/presets/memo.css",
-    "dist/presets/shared.css",
-    "dist/fonts/NotoSansJP.ttf",
-    "dist/fonts/NotoSerifJP.ttf",
-    "dist/fonts/OFL.txt",
+    "dist/fonts/KiwiMaru-Regular.ttf",
+    "dist/fonts/KiwiMaru-Medium.ttf",
+    "dist/fonts/KleeOne-Regular.ttf",
+    "dist/fonts/KleeOne-SemiBold.ttf",
+    "dist/fonts/ShipporiMincho-Regular.ttf",
+    "dist/fonts/ShipporiMincho-SemiBold.ttf",
+    "dist/fonts/ShipporiMincho-Bold.ttf",
+    "dist/fonts/ZenKakuGothicNew-Regular.ttf",
+    "dist/fonts/ZenKakuGothicNew-Medium.ttf",
+    "dist/fonts/ZenKakuGothicNew-Bold.ttf",
+    "dist/fonts/OFL-KiwiMaru.txt",
+    "dist/fonts/OFL-KleeOne.txt",
+    "dist/fonts/OFL-ShipporiMincho.txt",
+    "dist/fonts/OFL-ZenKakuGothicNew.txt",
     "package.json",
     "README.md",
     "README.en.md",
@@ -71,6 +80,7 @@ try {
   for (const path of packedPaths) {
     assert(!path.startsWith("src/"), `npm package should not include source file: ${path}`)
     assert(!path.startsWith("tests/"), `npm package should not include test file: ${path}`)
+    assert(!/^dist\/fonts\/.*\.ts$/.test(path), `npm package should not include font source code: ${path}`)
   }
 
   const pack = JSON.parse(run("npm", ["pack", "--json", "--pack-destination", packTmp])) as Array<{
@@ -89,16 +99,15 @@ try {
   const version = run(bin, ["--version"], installDir).trim()
   assert(version === pkg.version, `expected installed CLI version ${pkg.version}, got ${version}`)
 
-  // バンドル済み dist で preset 変換が実際に動くこと (CSS の所在解決の回帰ガード)。
-  // 過去 PRESETS_DIR が dist を指すのに CSS は dist/presets/ にあり --preset が ENOENT で落ちていた。
+  // バンドル済みdistが同梱フォントだけでオフライン変換できることを確認する。
   const distCli = join(root, "dist", "cli.js")
-  const presetMd = join(packTmp, "preset-smoke.md")
-  const presetPdf = join(packTmp, "preset-smoke.pdf")
-  writeFileSync(presetMd, "# 見出し\n\n本文です。\n", "utf-8")
-  const presetOut = run(process.execPath, [distCli, presetMd, presetPdf, "--preset", "report", "--json"])
-  const presetResult = JSON.parse(presetOut) as { success: boolean }
-  assert(presetResult.success === true, `dist --preset 変換が失敗しました: ${presetOut.trim()}`)
-  assert(existsSync(presetPdf), `dist --preset 変換の PDF が生成されませんでした: ${presetPdf}`)
+  const sampleMd = join(packTmp, "font-smoke.md")
+  const samplePdf = join(packTmp, "font-smoke.pdf")
+  writeFileSync(sampleMd, "# 日本語の見出し\n\n本文です。\n", "utf-8")
+  const output = run(process.execPath, [distCli, sampleMd, samplePdf, "--font", "shippori", "--json"])
+  const result = JSON.parse(output) as { success: boolean; font?: string }
+  assert(result.success === true && result.font === "shippori", `distの書体付き変換が失敗しました: ${output.trim()}`)
+  assert(existsSync(samplePdf), `dist変換のPDFが生成されませんでした: ${samplePdf}`)
 } finally {
   rmSync(packTmp, { recursive: true, force: true })
   rmSync(npmCache, { recursive: true, force: true })

@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-25
+
+### Breaking
+
+- CLIを `pdfmint <input> <output>` の単一変換へ整理し、`convert`、`batch`、`doctor` を削除
+- `--preset` とbrand profile自動探索を削除。Markdownは共通CSSへ `--css` を重ねる方式へ統一
+- `--font sans|serif` を `--font zen|shippori|kiwi|klee` に置き換え、Zen Kaku Gothic New、Shippori Mincho、Kiwi Maru、Klee Oneの実ウェイトをローカル同梱
+- JSONの `font` は、実際に書体を適用するMarkdown変換時だけ返す
+
 ## [0.6.1] - 2026-06-18
 
 ### Fixed

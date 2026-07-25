@@ -34,7 +34,7 @@ pdfmint は HTML / Markdown を綺麗な日本語 PDF に変換する CLI ツー
 ```ts
 import { markdownToHtml } from "./markdown"
 
-const html = markdownToHtml("# Hello", { font: "serif" })
+const html = markdownToHtml("# Hello", { font: "shippori" })
 console.log(html)
 ```
 
@@ -46,7 +46,7 @@ console.log(html)
 ## まとめ
 
 1. Markdown を書く
-2. `pdfmint report.md report.pdf --font serif` を実行
+2. `pdfmint report.md report.pdf --font shippori` を実行
 3. 提出用 PDF が完成
 
 [^1]: 脚注は文書末にまとめて出力されます。

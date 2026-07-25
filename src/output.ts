@@ -1,103 +1,25 @@
-import { PdfMintError, type ErrorCode } from "./errors"
+import { PdfMintError } from "./errors"
 import type { ConvertResult } from "./convert"
-import type { DoctorResult } from "./doctor"
 
 export type OutputFormat = "json" | "text"
 
-export interface BatchErrorEntry {
-  input: string
-  code: ErrorCode
-  message: string
-}
-
 export function formatSuccessSingle(result: ConvertResult, format: OutputFormat): string {
-  if (format === "json") {
-    return JSON.stringify({
-      success: true,
-      ...result,
-    })
-  }
-  // text
-  const sizeKB = (result.size_bytes / 1024).toFixed(1)
-  const parts = [`✓ ${result.output} (${sizeKB}KB, ${result.duration_ms}ms)`]
-  if (result.png) {
-    parts.push(`  PNG: ${result.png.output} (${(result.png.size_bytes / 1024).toFixed(1)}KB)`)
-  }
-  if (result.page_count !== undefined) {
-    parts.push(`  pages: ${result.page_count}`)
-  }
+  if (format === "json") return JSON.stringify({ success: true, ...result })
+  const font = result.font ? `, ${result.font}` : ""
+  const parts = [`✓ ${result.output} (${(result.size_bytes / 1024).toFixed(1)}KB, ${result.duration_ms}ms${font})`]
+  if (result.png) parts.push(`  PNG: ${result.png.output} (${(result.png.size_bytes / 1024).toFixed(1)}KB)`)
+  if (result.page_count !== undefined) parts.push(`  pages: ${result.page_count}`)
   return parts.join("\n")
 }
 
-export function formatSuccessBatch(
-  results: ConvertResult[],
-  errors: BatchErrorEntry[],
-  format: OutputFormat,
-  meta: { browser_reused?: boolean } = {}
-): string {
-  const total = results.length + errors.length
-  const succeeded = results.length
-  const failed = errors.length
-
-  if (format === "json") {
-    return JSON.stringify({
-      success: true,
-      total,
-      succeeded,
-      failed,
-      ...meta,
-      results,
-      errors,
-    })
+export function formatError(error: unknown, format: OutputFormat): string {
+  if (error instanceof PdfMintError) {
+    if (format === "json") return JSON.stringify({ success: false, error: error.toJSON() })
+    return `[${error.code}] ${error.message}\n  hint: ${error.hint}`
   }
-  const lines = [
-    `Batch complete: ${succeeded}/${total} succeeded`,
-    ...results.map((r) => `  ✓ ${r.output} (${(r.size_bytes / 1024).toFixed(1)}KB)`),
-    ...errors.map((e) => `  ✗ ${e.input}: [${e.code}] ${e.message}`),
-  ]
-  return lines.join("\n")
-}
-
-export function formatDoctor(result: DoctorResult, format: OutputFormat): string {
+  const message = error instanceof Error ? error.message : String(error)
   if (format === "json") {
-    return JSON.stringify({
-      success: result.success,
-      checks: result.checks,
-      duration_ms: result.duration_ms,
-    })
-  }
-  const lines = [
-    result.success ? "Doctor: all checks passed" : "Doctor: issues found",
-    ...result.checks.map((c) => {
-      const icon = c.status === "ok" ? "✓" : c.status === "warn" ? "!" : "✗"
-      const cmd = c.next_command ? ` → ${c.next_command}` : ""
-      return `  ${icon} ${c.name}: ${c.message}${cmd}`
-    }),
-  ]
-  return lines.join("\n")
-}
-
-export function formatError(err: unknown, format: OutputFormat): string {
-  if (err instanceof PdfMintError) {
-    if (format === "json") {
-      return JSON.stringify({
-        success: false,
-        error: err.toJSON(),
-      })
-    }
-    return `[${err.code}] ${err.message}\n  hint: ${err.hint}`
-  }
-
-  const message = err instanceof Error ? err.message : String(err)
-  if (format === "json") {
-    return JSON.stringify({
-      success: false,
-      error: {
-        code: "UNKNOWN_ERROR",
-        message,
-        hint: "予期しないエラーです。詳細を確認してください。",
-      },
-    })
+    return JSON.stringify({ success: false, error: { code: "UNKNOWN_ERROR", message, hint: "予期しないエラーです。詳細を確認してください。" } })
   }
   return `[UNKNOWN_ERROR] ${message}`
 }

@@ -1,7 +1,7 @@
 {
   "name": "@hayashiii/pdfmint",
-  "version": "0.6.1",
-  "description": "AI-friendly CLI for turning HTML/Markdown drafts into clean Japanese PDF/PNG deliverables.",
+  "version": "1.0.0",
+  "description": "Agent-friendly CLI for turning HTML/Markdown drafts into Japanese-typography PDF/PNG deliverables.",
   "type": "module",
   "bin": {
     "pdfmint": "dist/cli.js"
@@ -19,7 +19,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\" --external puppeteer --external marked --external marked-footnote --external marked-highlight --external highlight.js --external marked-alert --external glob && rm -rf dist/presets && cp -r src/presets dist/presets && rm -rf dist/fonts && cp -r src/fonts dist/fonts",
+    "build": "bun build src/cli.ts --target=node --format=esm --outfile=dist/cli.js --banner=\"#!/usr/bin/env node\" --external puppeteer --external marked --external marked-footnote --external marked-highlight --external highlight.js --external marked-alert && rm -rf dist/fonts && mkdir -p dist/fonts && cp src/fonts/*.ttf src/fonts/OFL-*.txt dist/fonts/",
     "test": "bun test --timeout 15000",
     "typecheck": "tsc --noEmit",
     "pack:smoke": "bun scripts/pack-smoke.ts",
@@ -34,7 +34,8 @@
     "puppeteer",
     "ai-agent",
     "claude-code",
-    "japanese"
+    "japanese",
+    "typography"
   ],
   "author": "Hayashi <hay@shigoto.dev>",
   "license": "MIT",
@@ -50,7 +51,6 @@
     "access": "public"
   },
   "dependencies": {
-    "glob": "^13.0.6",
     "highlight.js": "^11.11.1",
     "marked": "^18.0.5",
     "marked-alert": "^2.1.2",

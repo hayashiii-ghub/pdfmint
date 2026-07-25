@@ -1,5 +1,5 @@
 /** demo/ の成果物を再生成する。
- *  1) ビルド済み CLI で report.md → report.pdf (明朝・preset なし)
+ *  1) ビルド済みCLIでreport.md → report.pdf（Shippori Mincho）
  *  2) PDF を 1 ページ = 1 PNG にラスタライズ (report-1.png, report-2.png, ...)
  *  PNG を 1 枚に詰め込まず、PDF と同じページ区切りでプレビューを出すのが目的。 */
 import { execFileSync } from "node:child_process"
@@ -13,8 +13,8 @@ const demoDir = join(root, "demo")
 const mdPath = join(demoDir, "report.md")
 const pdfPath = join(demoDir, "report.pdf")
 
-// 1) PDF を生成 (明朝・preset なし)
-execFileSync("node", [join(root, "dist", "cli.js"), mdPath, pdfPath, "--font", "serif"], { stdio: "inherit" })
+// 1) PDFを生成（フォーマル文書向けのShippori Mincho）
+execFileSync("node", [join(root, "dist", "cli.js"), mdPath, pdfPath, "--font", "shippori"], { stdio: "inherit" })
 
 // 2) 既存のページ PNG を一掃 (report-1.png 等 / 旧 report.png)
 for (const f of readdirSync(demoDir)) {

@@ -1,73 +1,35 @@
 ---
 name: pdfmint
-description: HTML/Markdown を綺麗な日本語PDFやPNGに変換する CLI ツール。請求書・履歴書・案内書・1枚ものレポートなどをPDF化し、必要に応じて同じ入力から高解像度PNGも生成する。
+description: HTMLまたはMarkdownの原稿を、日本語組版されたPDF/PNG成果物へ変換する。
 ---
 
-# pdfmint Skill
+# pdfmint
 
-## When to use this skill
+ユーザーが原稿をPDFへ仕上げたいときに使う。常に `--json` を付ける。
 
-- ユーザーが HTML/Markdown ファイルを PDF にしたいと言ったとき
-- ユーザーが HTML/Markdown から PNG と PDF の両方を作りたいと言ったとき
-- Markdown をシンプルな書類（メモ・報告書・正式文）として PDF 化したいとき
-- 1ページ帳票でPDFが2ページに流れていないか検証したいとき
-- 複数HTMLを一括でPDFにしたいとき
-- Chromium 起動失敗時の環境診断が必要なとき
-
-## How to invoke
-
-1. 初回または `BROWSER_LAUNCH_FAILED` 時は `pdfmint doctor --json`
-2. 入力がHTMLかMarkdownか確認（拡張子で判別）
-3. PDFだけなら `pdfmint convert <input> <output> --json` を実行（`pdfmint <in> <out>` も可。出力ディレクトリは自動作成）
-4. Markdown は用途に応じて `--preset memo|report|letter` を付ける
-5. 明朝系にしたい場合は `--font serif`（`letter` preset は既定で serif 寄り）
-6. 書体・余白を完全固定したい場合は `--css <file.css>`
-   - 案件・組織で見た目(色・書体・余白・用紙)を統一したい場合は brand profile (`./pdfmint.brand.md` か `~/.config/pdfmint/brand.md`) が自動適用される。明示指定は `--brand <file.md>`、無効化は `--no-brand`。`--json` の `brand` フィールドで適用状況を確認
-7. PNGも必要なら `--png <output.png> --viewport <width>x<height> --scale <number>`
-8. 1ページ固定が必要なら `--expect-pages 1`
-9. JSON出力を解析して結果を報告
-
-## Examples
-
-### 単一HTML→PDF
 ```bash
-pdfmint convert invoice.html invoice.pdf --json
+pdfmint <input.html|input.md> <output.pdf> --json
 ```
 
-### Markdown→PDF（preset）
+Markdownでは目的に合う書体を選ぶ。
+
+- `zen`: 実務文書、仕様書、表（既定）
+- `shippori`: 報告書、提案書、正式文書
+- `kiwi`: 案内、親しみのある資料
+- `klee`: 手紙、柔らかい一枚もの
+
 ```bash
-pdfmint memo.md memo.pdf --preset memo --json
-pdfmint report.md report.pdf --preset report --json
-pdfmint letter.md letter.pdf --preset letter --json
+pdfmint report.md report.pdf --font shippori --json
 ```
 
-### HTML→PDF + PNG
+レイアウト確認が必要ならPNGとページ数検証を付ける。
+
 ```bash
-pdfmint report.html report.pdf \
-  --png report.png \
-  --viewport 1055x1491 \
-  --scale 3 \
-  --expect-pages 1 \
-  --json
+pdfmint sheet.md sheet.pdf --png sheet.png --expect-pages 1 --json
 ```
 
-### バッチ処理
-```bash
-pdfmint batch "./html/*.html" ./pdf/ --json
-```
+成功時は `output`、`font`、`page_count`、任意の `png.output` を報告する。見た目が重要な場合はPNGを実際に確認する。
 
-### 環境診断
-```bash
-pdfmint doctor --json
-```
+HTMLのCSSはHTML自身を正本とする。Markdownの見た目を案件ごとに変える場合だけ `--css <file.css>` を使う。
 
-## Error recovery
-
-- `BROWSER_LAUNCH_FAILED`: JSON の `next_command` を実行 → `pdfmint doctor --json`
-- `INPUT_NOT_FOUND`: ファイルパスを確認
-- `PAGE_LOAD_FAILED`: HTML内の外部リソース（フォント・画像）を確認
-- `INVALID_PRESET`: `--preset memo|report|letter`
-- `BRAND_INVALID`: brand.md の frontmatter / token 値を `hint` に従って修正、または `--no-brand`
-- `PAGE_COUNT_MISMATCH`: `@page` / 高さ / overflow を確認
-
-詳細は `AGENTS.md` を参照。
+`BROWSER_LAUNCH_FAILED` ではJSONの `next_command` を実行して同じ変換を再試行する。パス・ヘッダー・外部資産に秘密情報がある場合は出力や報告へ含めない。

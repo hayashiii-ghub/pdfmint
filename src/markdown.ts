@@ -1,26 +1,26 @@
-/** prepare 層: Markdown を preset/legacy CSS 付き HTML に変換する。 */
+/** Markdownを共通文書CSSと選択フォント付きHTMLへ変換する。 */
 import { Marked } from "marked"
 import markedFootnote from "marked-footnote"
 import { markedHighlight } from "marked-highlight"
 import hljs from "highlight.js/lib/common"
 import markedAlert from "marked-alert"
-import { presetCss, type MarkdownPreset } from "./presets/index"
 import { fontFaceCss } from "./fonts/index"
-import { FONT_STACKS, type MarkdownFontPreset } from "./fonts/stacks"
+import {
+  DEFAULT_DOCUMENT_FONT,
+  FONT_PROFILES,
+  FONT_STACKS,
+  type DocumentFont,
+} from "./fonts/stacks"
 
-export type { MarkdownFontPreset } from "./fonts/stacks"
+export type { DocumentFont } from "./fonts/stacks"
 
 export interface MarkdownOptions {
-  font?: MarkdownFontPreset
-  preset?: MarkdownPreset
+  font?: DocumentFont
   customCss?: string
-  cssPath?: string
-  /** brand profile 由来の :root 変数ブロック。常に先頭へ prepend する。 */
-  brandCss?: string
+  margin?: string
 }
 
-/** 拡張記法 (脚注 / GitHub callout / シンタックスハイライト) を有効化した marked インスタンス。
- *  preset/legacy/custom いずれの CSS でも同じ HTML 構造が出るよう 1 つを共有する。 */
+/** 脚注・GitHub callout・シンタックスハイライトを有効化したmarkedインスタンス。 */
 const md_ = new Marked()
   .use(
     markedHighlight({
@@ -34,7 +34,7 @@ const md_ = new Marked()
   .use(markedFootnote())
   .use(markedAlert())
 
-/** 拡張要素 (footnotes/alert + hljs テーマ) の見た目。preset 非依存なので常に注入する。 */
+/** footnotes / alert / highlight.jsの共通スタイル。 */
 const EXTENSIONS_CSS = `
 /* 脚注 */
 .footnotes { font-size: 0.85em; color: #555; margin-top: 2.5em; padding-top: 0.6em; border-top: 1px solid #ddd; break-inside: avoid; }
@@ -72,19 +72,21 @@ a[data-footnote-backref] { text-decoration: none; }
 .hljs-deletion { color: #b31d28; background: #ffeef0; }
 `
 
-/** Legacy default CSS (--font sans without --preset). */
-function legacyDefaultCss(font: MarkdownFontPreset): string {
+/** 全書体で共有する文書スタイル。書体固有値はweightだけに限定する。 */
+function defaultCss(font: DocumentFont): string {
+  const profile = FONT_PROFILES[font]
   return `
 @page { size: A4; margin: var(--pm-margin, 20mm); }
 body {
   font-family: ${FONT_STACKS[font]};
+  font-weight: ${profile.normal};
   font-size: var(--pm-font-size, 11pt);
   line-height: var(--pm-line-height, 1.7);
   color: var(--pm-ink, #1a1a1a);
 }
-/* 差し色は深緑 (--pm-accent) で統一。明色は color-mix で派生する (brand で accent を変えると全体が追従)。
+/* 差し色は深緑 (--pm-accent) で統一し、明色はcolor-mixで派生する。
    見出しはページ末で孤立させない (break-after: avoid)。 */
-h1, h2, h3, h4 { color: var(--pm-ink, #222); margin-top: 1.5em; break-after: avoid; }
+h1, h2, h3, h4 { color: var(--pm-ink, #222); margin-top: 1.5em; break-after: avoid; font-weight: ${profile.extra}; }
 h1 { font-size: 20pt; border-bottom: 2px solid var(--pm-accent, #2f5d4e); padding-bottom: 0.2em; }
 h2 { font-size: 16pt; border-left: 4px solid var(--pm-accent, #2f5d4e); padding-left: 0.5em; }
 h3 { font-size: 14pt; color: color-mix(in srgb, var(--pm-ink, #222) 70%, var(--pm-accent, #2f5d4e)); }
@@ -96,7 +98,8 @@ th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
 th[align="center"], td[align="center"] { text-align: center; }
 th[align="right"], td[align="right"] { text-align: right; }
 /* 表ヘッダも深緑テーマに揃える (淡い深緑地 + 深緑の下罫線)。 */
-th { background: color-mix(in srgb, var(--pm-accent, #2f5d4e) 8%, #ffffff); border-bottom: 2px solid var(--pm-accent, #2f5d4e); font-weight: 600; }
+th { background: color-mix(in srgb, var(--pm-accent, #2f5d4e) 8%, #ffffff); border-bottom: 2px solid var(--pm-accent, #2f5d4e); font-weight: ${profile.bold}; }
+strong, b { font-weight: ${profile.bold}; }
 code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: "SFMono-Regular", "Menlo", monospace; }
 pre { background: #f4f4f4; padding: 12px; border-radius: 4px; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; overflow-x: visible; }
 pre code { background: none; padding: 0; }
@@ -109,19 +112,10 @@ blockquote { border-left: 4px solid #ddd; padding-left: 1em; color: #666; margin
 }
 
 function resolveCss(options: MarkdownOptions): string {
-  // brand の :root 変数は customCss escape hatch でも参照できるよう常に先頭に置く。
-  // EXTENSIONS_CSS は preset 非依存の拡張要素 (脚注/callout/hljs) の土台。preset/custom より前に置き上書きを許す。
-  // 同梱 font の @font-face は最先頭に置き、preset/legacy/custom いずれの経路でも "Noto Sans JP" /
-  // "Noto Serif JP" が同梱版に解決されるようにする (font-family 文字列は変えない)。
-  const brand = options.brandCss ?? ""
-  const base = fontFaceCss() + "\n" + brand + EXTENSIONS_CSS
-  if (options.customCss) return base + options.customCss
-  const font = options.font ?? "sans"
-  if (options.preset) {
-    const effectiveFont = options.preset === "letter" ? (options.font ?? "serif") : font
-    return base + presetCss(options.preset, effectiveFont)
-  }
-  return base + legacyDefaultCss(font)
+  const font = options.font ?? DEFAULT_DOCUMENT_FONT
+  const margin = options.margin ? `:root { --pm-margin: ${options.margin}; }\n` : ""
+  // custom CSSは既定スタイルの後ろへ重ね、フォント・拡張記法・基本組版を失わず上書きできるようにする。
+  return fontFaceCss(font) + "\n" + margin + EXTENSIONS_CSS + defaultCss(font) + (options.customCss ?? "")
 }
 
 function escapeHtml(s: string): string {
@@ -132,8 +126,7 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;")
 }
 
-/** 入力 Markdown 先頭の frontmatter を除去し、title を取り出す。
- *  brand.md と違い未知 key は全て無視 (本文に漏らさないことが目的)。 */
+/** 入力Markdown先頭のfrontmatterを除去し、titleを取り出す。未知keyは無視する。 */
 function stripFrontmatter(md: string): { body: string; title?: string } {
   const normalized = md.replace(/^﻿/, "")
   const match = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(normalized)

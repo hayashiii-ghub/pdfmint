@@ -19,10 +19,9 @@ test("Markdown input can load custom CSS from a file", () => {
   try {
     const html = readFileSync(target.renderPath, "utf-8")
     expect(html).toContain("custom-report-font")
-    // custom CSS は既定の font スタックを上書きする。同梱 font の @font-face 宣言
-    // ("Noto Sans JP" を含む) は常に注入されるため、ここでは「既定スタックが課されて
-    // いない」ことを、スタック内にしか現れない "Hiragino Sans" の不在で確認する。
-    expect(html).not.toContain("Hiragino Sans")
+    // custom CSSは共通組版の後ろへ重なり、既定フォント資産も維持する。
+    expect(html).toContain("Zen Kaku Gothic New")
+    expect(html.indexOf("custom-report-font")).toBeGreaterThan(html.indexOf("Zen Kaku Gothic New"))
   } finally {
     target.cleanup()
   }

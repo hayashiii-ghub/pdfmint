@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>pdfmint v1 candidate — 何が変わったか</title>
+    <style>
+      :root {
+        --ink: #07172f;
+        --green: #0e5b43;
+        --green-soft: #e8f2ed;
+        --paper: #ffffff;
+        --mist: #f4f6f7;
+        --line: #cfd6da;
+        --muted: #61707d;
+        --serif: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+        --sans: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+        --mono: "SFMono-Regular", Consolas, monospace;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: var(--sans);
+        line-height: 1.75;
+      }
+
+      a { color: inherit; }
+
+      .wrap { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
+
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 74px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .wordmark {
+        font-family: var(--serif);
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        text-decoration: none;
+      }
+
+      .nav { display: flex; gap: 22px; font-size: 0.82rem; font-weight: 700; }
+      .nav a { color: var(--muted); text-decoration: none; }
+      .nav a:hover { color: var(--green); }
+
+      .hero {
+        position: relative;
+        min-height: 540px;
+        display: grid;
+        align-content: center;
+        overflow: hidden;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 58px;
+        width: min(40vw, 460px);
+        height: 310px;
+        background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 32px 32px;
+        opacity: 0.55;
+        mask-image: linear-gradient(90deg, transparent, black 18%, black 80%, transparent), linear-gradient(180deg, transparent, black 16%, black 82%, transparent);
+        pointer-events: none;
+      }
+
+      .hero-copy { position: relative; z-index: 1; max-width: 800px; }
+      .hero h1 {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: clamp(3.4rem, 8vw, 7.5rem);
+        font-weight: 600;
+        letter-spacing: -0.065em;
+        line-height: 1;
+      }
+
+      .rule { width: 66px; height: 3px; margin: 31px 0 22px; background: var(--green); }
+      .lead { max-width: 590px; margin: 0; font-family: var(--serif); font-size: clamp(1.17rem, 2vw, 1.48rem); line-height: 1.8; }
+
+      section { padding: 92px 0; }
+      .section-title { margin: 0 0 36px; font-family: var(--serif); font-size: clamp(1.7rem, 3vw, 2.7rem); letter-spacing: -0.04em; line-height: 1.2; }
+      .section-intro { max-width: 630px; margin: -19px 0 42px; color: var(--muted); }
+
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 72px 1.17fr;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .column { padding: 45px 40px 50px 0; }
+      .column.after { padding: 45px 0 50px 40px; }
+      .compare-arrow { display: grid; place-items: center; color: var(--ink); font-size: 3rem; font-weight: 300; }
+
+      .label { margin: 0 0 17px; color: var(--muted); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.12em; }
+      .after .label { color: var(--green); }
+      .column h3 { margin: 0 0 10px; font-family: var(--serif); font-size: 2.3rem; letter-spacing: -0.04em; line-height: 1.2; }
+      .column p { margin: 0 0 26px; color: var(--muted); }
+
+      .removed, .kept { list-style: none; padding: 0; margin: 0; }
+      .removed li, .kept li { display: flex; gap: 15px; align-items: baseline; padding: 17px 2px; border-bottom: 1px solid var(--line); }
+      .removed li:last-child, .kept li:last-child { border-bottom: 0; }
+      .removed .mark { color: #9ca8af; font-size: 1.55rem; line-height: 1; }
+      .removed span:last-child { color: #737f87; }
+      .kept .mark { color: var(--green); font-size: 1.35rem; line-height: 1; font-weight: 800; }
+
+      .command {
+        margin: 28px 0 24px;
+        padding: 21px 24px;
+        border: 1.5px solid var(--green);
+        color: var(--green);
+        background: #fbfefc;
+        font-family: var(--mono);
+        font-size: 1.02rem;
+        font-weight: 700;
+      }
+      .command small { display: block; margin-top: 6px; font-family: var(--sans); font-size: 0.75rem; font-weight: 600; }
+
+      .font-list { margin-top: 8px; }
+      .font-list h4 { margin: 0 0 5px; color: var(--green); font-size: 0.84rem; letter-spacing: 0.04em; }
+      .font-list p { margin: 0 0 14px; color: var(--muted); font-size: 0.9rem; }
+      .font-list strong { color: var(--ink); font-family: var(--serif); font-size: 1.08rem; }
+
+      .flow { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+      .step { min-height: 212px; padding: 28px 25px 32px 0; position: relative; }
+      .step + .step { padding-left: 38px; border-left: 1px solid var(--line); }
+      .step + .step::before { content: "→"; position: absolute; top: 28px; left: -13px; color: var(--green); font-size: 1.3rem; background: var(--paper); }
+      .step-number { margin: 0 0 10px; color: var(--green); font-family: var(--serif); font-size: 1.75rem; font-weight: 700; }
+      .step h3 { margin: 0 0 7px; font-size: 0.98rem; line-height: 1.5; }
+      .step p { margin: 0; color: var(--muted); font-size: 0.84rem; line-height: 1.65; }
+
+      .evidence { background: var(--mist); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .evidence-layout { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 72px; align-items: center; }
+      .evidence .section-title { margin-bottom: 18px; }
+      .evidence-copy p { margin: 0 0 20px; color: var(--muted); }
+      .checklist { list-style: none; padding: 0; margin: 24px 0 0; }
+      .checklist li { display: flex; gap: 10px; margin: 9px 0; font-size: 0.92rem; }
+      .checklist b { color: var(--green); }
+
+      pre {
+        margin: 0;
+        padding: 29px;
+        overflow: auto;
+        border: 1px solid #9aaca4;
+        background: #fff;
+        color: #173c30;
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        line-height: 1.85;
+        box-shadow: 7px 7px 0 rgba(14, 91, 67, 0.1);
+      }
+      .json-key { color: #0e5b43; }
+      .json-string { color: #20546e; }
+      .json-number { color: #9c4821; }
+
+      .not-changed { display: grid; grid-template-columns: 0.74fr 1.26fr; gap: 48px; align-items: start; }
+      .not-changed .section-title { margin: 0; }
+      .retained { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; border: 1px solid var(--line); background: var(--line); }
+      .retained div { padding: 22px; background: var(--paper); }
+      .retained b { display: block; margin-bottom: 4px; color: var(--green); font-size: 0.94rem; }
+      .retained span { color: var(--muted); font-size: 0.86rem; }
+
+      .closing { padding: 108px 0 112px; }
+      .closing h2 { max-width: 900px; margin: 0; color: var(--green); font-family: var(--serif); font-size: clamp(2.25rem, 5vw, 4.25rem); font-weight: 600; letter-spacing: -0.06em; line-height: 1.3; }
+      .closing p { max-width: 690px; margin: 28px 0 0; color: var(--muted); }
+
+      footer { border-top: 1px solid var(--line); padding: 24px 0 32px; color: var(--muted); font-size: 0.78rem; }
+      .footer-row { display: flex; justify-content: space-between; gap: 20px; }
+
+      @media (max-width: 760px) {
+        .wrap { width: min(100% - 36px, 640px); }
+        .site-header { min-height: 62px; }
+        .nav { gap: 13px; font-size: 0.7rem; }
+        .nav a:nth-child(n + 3) { display: none; }
+        .hero { min-height: 456px; }
+        .hero::after { right: -105px; top: 24px; width: 330px; height: 245px; opacity: 0.35; }
+        section { padding: 68px 0; }
+        .compare { grid-template-columns: 1fr; }
+        .column, .column.after { padding: 38px 0; }
+        .compare-arrow { height: 42px; transform: rotate(90deg); }
+        .flow { grid-template-columns: 1fr; }
+        .step, .step + .step { min-height: 0; padding: 24px 0 24px 34px; border-left: 0; border-top: 1px solid var(--line); }
+        .step:first-child { border-top: 0; }
+        .step + .step::before { top: -14px; left: 0; transform: rotate(90deg); }
+        .evidence-layout, .not-changed { grid-template-columns: 1fr; gap: 34px; }
+        .retained { grid-template-columns: 1fr; }
+        pre { padding: 20px; font-size: 0.68rem; }
+        .footer-row { display: block; }
+        .footer-row span + span { display: block; margin-top: 7px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="wrap site-header">
+      <a class="wordmark" href="#top">pdfmint</a>
+      <nav class="nav" aria-label="ページ内ナビゲーション">
+        <a href="#change">変化</a>
+        <a href="#flow">使い方</a>
+        <a href="#evidence">出力</a>
+        <a href="#retained">残すもの</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="wrap hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">pdfmint, focused.</h1>
+          <div class="rule"></div>
+          <p class="lead">AIが作ったHTML / Markdownを、目的に合う日本語組版で提出用PDFへ仕上げるための最小ツールへ。</p>
+        </div>
+      </section>
+
+      <section id="change" class="wrap" aria-labelledby="change-title">
+        <h2 id="change-title" class="section-title">何を削り、何を強くしたか。</h2>
+        <p class="section-intro">v0.xは便利な機能を少しずつ増やした結果、変換前に「どの仕組みを選ぶか」を考えるCLIになっていました。v1候補では、文書を仕上げることだけに戻します。</p>
+        <div class="compare">
+          <article class="column">
+            <p class="label">BEFORE / LEGACY 0.x</p>
+            <h3>多機能だった。</h3>
+            <p>変換に加え、運用や見た目の設定経路も抱えていました。</p>
+            <ul class="removed">
+              <li><span class="mark">×</span><span>batch — 複数ファイルの一括処理</span></li>
+              <li><span class="mark">×</span><span>doctor — 環境診断コマンド</span></li>
+              <li><span class="mark">×</span><span>preset — memo / report / letter</span></li>
+              <li><span class="mark">×</span><span>brand profile — 自動探索と優先順位</span></li>
+              <li><span class="mark">×</span><span>Noto Sans / Serif の2書体</span></li>
+            </ul>
+          </article>
+          <div class="compare-arrow" aria-hidden="true">→</div>
+          <article class="column after">
+            <p class="label">AFTER / V1 CANDIDATE</p>
+            <h3>仕上げに集中する。</h3>
+            <p>入口は1つ。選ぶのは原稿の目的に合う書体だけです。</p>
+            <div class="command">$ pdfmint input.md output.pdf --font shippori --json<small>入力、出力、必要なら書体。これで完結。</small></div>
+            <div class="font-list">
+              <h4>ローカル同梱する4書体</h4>
+              <p><strong>Zen Kaku Gothic New</strong> — 実務文書・表・仕様書（既定）</p>
+              <p><strong>Shippori Mincho</strong> — 提案書・報告書・正式文書</p>
+              <p><strong>Kiwi Maru</strong> — 案内・親しみのある資料</p>
+              <p><strong>Klee One</strong> — 手紙・柔らかい一枚もの</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="flow" class="wrap" aria-labelledby="flow-title">
+        <h2 id="flow-title" class="section-title">開発・提出の流れは、4段だけ。</h2>
+        <div class="flow">
+          <article class="step"><p class="step-number">1.</p><h3>原稿を用意する</h3><p>AIが生成したHTMLまたはMarkdown。内容と構造は原稿側が持つ。</p></article>
+          <article class="step"><p class="step-number">2.</p><h3>書体を選ぶ</h3><p>文書の目的から4つの書体を1つ選ぶ。選ばなければzen。</p></article>
+          <article class="step"><p class="step-number">3.</p><h3>必要なら確認を足す</h3><p>PNGプレビュー、ページ数、用紙、余白だけを必要に応じて指定。</p></article>
+          <article class="step"><p class="step-number">4.</p><h3>PDFを受け取る</h3><p>JSONからPDF・PNGの絶対パスとページ数を読み、提出物として扱う。</p></article>
+        </div>
+      </section>
+
+      <section id="evidence" class="evidence" aria-labelledby="evidence-title">
+        <div class="wrap evidence-layout">
+          <div class="evidence-copy">
+            <h2 id="evidence-title" class="section-title">エージェントには、迷わないJSONを返す。</h2>
+            <p>人間向けの対話フローではなく、成果物・書体・ページ数を機械的に判断できる出力です。成功だけで見た目が保証されるわけではないため、重要なレイアウトではPNGも生成して確認します。</p>
+            <ul class="checklist">
+              <li><b>✓</b><span>stdoutは最終結果JSONだけ</span></li>
+              <li><b>✓</b><span>Markdown時は実際に適用したfontを返す</span></li>
+              <li><b>✓</b><span>ページ数不一致は構造化エラー</span></li>
+              <li><b>✓</b><span>PNGは目視確認用の副成果物</span></li>
+            </ul>
+          </div>
+          <pre aria-label="JSON出力例">{
+  <span class="json-key">"success"</span>: true,
+  <span class="json-key">"input"</span>: <span class="json-string">"/abs/report.md"</span>,
+  <span class="json-key">"output"</span>: <span class="json-string">"/abs/report.pdf"</span>,
+  <span class="json-key">"format"</span>: <span class="json-string">"A4"</span>,
+  <span class="json-key">"font"</span>: <span class="json-string">"shippori"</span>,
+  <span class="json-key">"page_count"</span>: <span class="json-number">3</span>,
+  <span class="json-key">"png"</span>: {
+    <span class="json-key">"output"</span>: <span class="json-string">"/abs/report.png"</span>
+  }
+}</pre>
+        </div>
+      </section>
+
+      <section id="retained" class="wrap not-changed" aria-labelledby="retained-title">
+        <h2 id="retained-title" class="section-title">削っても、原稿を仕上げる力は残す。</h2>
+        <div class="retained">
+          <div><b>HTML / Markdown</b><span>原稿の形式はそのまま受け取る。</span></div>
+          <div><b>GFM拡張</b><span>表・脚注・callout・コードハイライトを維持。</span></div>
+          <div><b>任意CSS</b><span>案件固有の見た目は <code>--css</code> で上書き。</span></div>
+          <div><b>PDF + PNG</b><span>提出用PDFと目視確認用PNGを同じ原稿から。</span></div>
+          <div><b>ページ数検証</b><span>一枚ものの意図しない改ページを検出。</span></div>
+          <div><b>オフライン再現性</b><span>Google Fontsへ接続せず、同梱フォントで描画。</span></div>
+        </div>
+      </section>
+
+      <section class="wrap closing" aria-label="結論">
+        <h2>操作は減らす。<br />日本語組版へのこだわりは、増やす。</h2>
+        <p>4書体の実ウェイトをローカルに持つため、npm tarballは約33MBになります。この重さは汎用機能ではなく、環境に左右されない日本語PDFの品質に使っています。</p>
+      </section>
+    </main>
+
+    <footer class="wrap"><div class="footer-row"><span>pdfmint v1 candidate — implementation summary</span><span>source: docs/pdfmint-v1-summary.html</span></div></footer>
+  </body>
+</html>

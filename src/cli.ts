@@ -1,57 +1,33 @@
-/** CLI エントリ: convert / batch / doctor サブコマンドとレガシー位置引数をルーティングする。 */
+/** 単一ファイルをPDFへ仕上げるpdfmint CLI。 */
 import { convertHtmlToPdf, type ConvertOptions } from "./convert"
-import { convertBatch } from "./batch"
-import { runDoctor } from "./doctor"
-import {
-  formatSuccessSingle,
-  formatSuccessBatch,
-  formatDoctor,
-  formatError,
-  type OutputFormat,
-} from "./output"
+import { formatSuccessSingle, formatError, type OutputFormat } from "./output"
 import { getVersion } from "./version"
 import { PdfMintError } from "./errors"
-import { resolveBrand, brandToCss } from "./brand"
-import type { MarkdownFontPreset } from "./markdown"
-import { MARKDOWN_PRESETS, type MarkdownPreset } from "./presets/index"
+import { DOCUMENT_FONTS, DEFAULT_DOCUMENT_FONT, type DocumentFont } from "./fonts/stacks"
 
-const HELP = `pdfmint - HTML/Markdown → PDF converter (AI-friendly CLI)
+const HELP = `pdfmint - Japanese typography for agent-made documents
 
 Usage:
-  pdfmint convert <input> <output>      Convert single file (HTML or Markdown)
-  pdfmint <input> <output>              Same as convert (legacy alias)
-  pdfmint batch <pattern> <out-dir>     Batch convert (reuses one Chromium session)
-  pdfmint doctor                        Run environment diagnostics
-  pdfmint help                          Show this help
-  pdfmint --version                     Show version
+  pdfmint <input.html|input.md> <output.pdf> [options]
 
-Flags (apply to convert / batch):
-  --json                                Output JSON to stdout (for AI agents)
+Options:
+  --json                                Output structured JSON
+  --font <zen|shippori|kiwi|klee>       Japanese document font (default: zen)
+  --css <file.css>                      Layer custom CSS over the default style
   --format <A4|A3|Letter|Legal>         Paper size (default: A4)
-  --margin <value>                      Margin (e.g., 10mm; default: 0)
+  --margin <value>                      Margin (e.g. 18mm; default: 0)
   --landscape                           Landscape orientation
   --no-background                       Disable CSS backgrounds
-  --font <sans|serif>                   Markdown font preset (default: sans)
-  --preset <memo|report|letter>         Markdown document preset (default: legacy sans CSS)
-  --css <file.css>                      Custom CSS file for Markdown input
-  --brand <file.md>                     Brand profile file (overrides auto-discovery)
-  --no-brand                            Ignore brand profile (auto-discovery off)
-  --png <output.png>                    Also render a PNG screenshot (single conversion only)
-  --viewport <width>x<height>           PNG viewport (default: 1055x1491; with --png)
-  --scale <number>                      PNG device scale factor (default: 3; with --png)
-  --expect-pages <number>               Fail if generated PDF page count differs
+  --png <output.png>                    Also render a PNG preview
+  --viewport <width>x<height>           PNG viewport (default: 1055x1491)
+  --scale <number>                      PNG device scale factor (default: 3)
+  --expect-pages <number>               Fail when the PDF page count differs
+  --version                             Show version
+  --help                                Show help
 
 Examples:
-  pdfmint convert invoice.html invoice.pdf
-  pdfmint memo.md memo.pdf --preset memo --json
-  pdfmint report.md report.pdf --preset report --font serif
-  pdfmint report.html report.pdf --png report.png --viewport 1055x1491 --scale 3
-  pdfmint batch "./html/*.html" ./pdf/ --json
-  pdfmint doctor --json
-
-Docs:
-  AGENTS.md  - AI agent guide
-  https://github.com/hayashiii-ghub/pdfmint
+  pdfmint report.md report.pdf --font shippori --json
+  pdfmint notice.md notice.pdf --font kiwi --png notice.png --json
 `
 
 export interface ParsedArgs {
@@ -60,10 +36,7 @@ export interface ParsedArgs {
   format?: string
   margin?: string
   font?: string
-  preset?: string
   css?: string
-  brand?: string
-  noBrand: boolean
   landscape: boolean
   noBackground: boolean
   png?: string
@@ -79,9 +52,7 @@ const VALUE_FLAGS = {
   "--format": "format",
   "--margin": "margin",
   "--font": "font",
-  "--preset": "preset",
   "--css": "css",
-  "--brand": "brand",
   "--png": "png",
   "--viewport": "viewport",
   "--scale": "scale",
@@ -90,7 +61,7 @@ const VALUE_FLAGS = {
 
 type ValueFlag = keyof typeof VALUE_FLAGS
 
-function invalidOption(message: string, hint = "pdfmint help で利用可能なオプションを確認してください。"): PdfMintError {
+function invalidOption(message: string, hint = "pdfmint --help で利用可能なオプションを確認してください。"): PdfMintError {
   return new PdfMintError("INVALID_OPTION", message, hint, {})
 }
 
@@ -102,219 +73,109 @@ function parseArgs(argv: string[]): ParsedArgs {
   const result: ParsedArgs = {
     positional: [],
     json: false,
-    noBrand: false,
     landscape: false,
     noBackground: false,
     showVersion: false,
     showHelp: false,
   }
 
-  function readValue(flag: string, index: number): string {
-    const value = argv[index + 1]
-    if (!value || value.startsWith("-")) {
-      throw invalidOption(
-        `${flag} には値を指定してください。`,
-        `${flag} <value> の形式で指定してください。`
-      )
-    }
-    return value
-  }
-
   for (let i = 0; i < argv.length; i++) {
-    const a = argv[i]!
-    if (a === "--json") result.json = true
-    else if (a === "--no-brand") result.noBrand = true
-    else if (a === "--landscape") result.landscape = true
-    else if (a === "--no-background") result.noBackground = true
-    else if (a === "--version") result.showVersion = true
-    else if (a === "help" || a === "--help" || a === "-h") result.showHelp = true
-    else if (isValueFlag(a)) {
-      result[VALUE_FLAGS[a]] = readValue(a, i)
+    const value = argv[i]!
+    if (value === "--json") result.json = true
+    else if (value === "--landscape") result.landscape = true
+    else if (value === "--no-background") result.noBackground = true
+    else if (value === "--version") result.showVersion = true
+    else if (value === "help" || value === "--help" || value === "-h") result.showHelp = true
+    else if (isValueFlag(value)) {
+      const next = argv[i + 1]
+      if (!next || next.startsWith("-")) {
+        throw invalidOption(`${value} には値を指定してください。`, `${value} <value> の形式で指定してください。`)
+      }
+      result[VALUE_FLAGS[value]] = next
       i++
+    } else if (value.startsWith("-")) {
+      throw invalidOption(`未知のオプションです: ${value}`)
+    } else {
+      result.positional.push(value)
     }
-    else if (a.startsWith("-")) throw invalidOption(`未知のオプションです: ${a}`)
-    else result.positional.push(a)
   }
   return result
 }
 
 function parsePositiveNumber(value: string | undefined, flag: string): number {
-  const n = Number(value)
-  if (!value || !Number.isFinite(n) || n <= 0) {
-    throw new PdfMintError(
-      "INVALID_VIEWPORT",
-      `${flag} には正の数値を指定してください: ${value ?? ""}`,
-      `${flag} の値を確認してください。例: --scale 3 / --expect-pages 1`,
-      {}
-    )
+  const number = Number(value)
+  if (!value || !Number.isFinite(number) || number <= 0) {
+    throw new PdfMintError("INVALID_VIEWPORT", `${flag} には正の数値を指定してください: ${value ?? ""}`, `${flag} の値を確認してください。`, {})
   }
-  return n
+  return number
 }
 
 function parsePositiveInteger(value: string | undefined, flag: string): number {
-  const n = parsePositiveNumber(value, flag)
-  if (!Number.isInteger(n)) {
-    throw new PdfMintError(
-      "INVALID_VIEWPORT",
-      `${flag} には正の整数を指定してください: ${value ?? ""}`,
-      `${flag} の値を確認してください。例: --expect-pages 1`,
-      {}
-    )
+  const number = parsePositiveNumber(value, flag)
+  if (!Number.isInteger(number)) {
+    throw new PdfMintError("INVALID_VIEWPORT", `${flag} には正の整数を指定してください: ${value ?? ""}`, `${flag} の値を確認してください。`, {})
   }
-  return n
+  return number
 }
 
 function parseViewport(value: string | undefined): { width: number; height: number } {
   const viewport = value ?? "1055x1491"
   const match = /^(\d+)x(\d+)$/i.exec(viewport)
-  if (!match) {
-    throw new PdfMintError(
-      "INVALID_VIEWPORT",
-      `viewport の形式が不正です: ${viewport}`,
-      "viewport は <width>x<height> 形式で指定してください。例: --viewport 1055x1491",
-      {}
-    )
+  if (!match || Number(match[1]) <= 0 || Number(match[2]) <= 0) {
+    throw new PdfMintError("INVALID_VIEWPORT", `viewport の形式が不正です: ${viewport}`, "--viewport <width>x<height> の形式で指定してください。", {})
   }
-  const width = Number(match[1])
-  const height = Number(match[2])
-  if (width <= 0 || height <= 0) {
-    throw new PdfMintError(
-      "INVALID_VIEWPORT",
-      `viewport には正の整数を指定してください: ${viewport}`,
-      "viewport は <width>x<height> 形式で指定してください。例: --viewport 1055x1491",
-      {}
-    )
-  }
-  return { width, height }
+  return { width: Number(match[1]), height: Number(match[2]) }
 }
 
-// margin は Puppeteer の margin と Markdown の --pm-margin (CSS 変数) の両方へ流れる。
-// CSS へ注入するため、単位付きの長さ (または 0) のみ許可して break-out を防ぐ。
 const MARGIN_RE = /^(0|[0-9]*\.?[0-9]+(pt|px|mm|cm|in))$/
 
-function validateMargin(value: string | undefined): string | undefined {
+function parseMargin(value: string | undefined): string | undefined {
   if (value === undefined) return undefined
   if (!MARGIN_RE.test(value)) {
-    throw invalidOption(
-      `margin が不正です: ${value}`,
-      "--margin には単位付きの長さ (例 18mm / 1in) または 0 を指定してください。"
-    )
+    throw invalidOption(`margin が不正です: ${value}`, "--margin には単位付きの長さ（例 18mm / 1in）または0を指定してください。")
   }
   return value
 }
 
-function parseFontPreset(value: string | undefined): MarkdownFontPreset | undefined {
-  if (!value) return undefined
-  if (value === "sans" || value === "serif") return value
-  throw new PdfMintError(
-    "INVALID_FONT",
-    `font preset が不正です: ${value}`,
-    "--font には sans または serif を指定してください。",
-    {}
-  )
-}
-
-function parseMarkdownPreset(value: string | undefined): MarkdownPreset | undefined {
-  if (!value) return undefined
-  if ((MARKDOWN_PRESETS as readonly string[]).includes(value)) {
-    return value as MarkdownPreset
-  }
-  throw new PdfMintError(
-    "INVALID_PRESET",
-    `preset が不正です: ${value}`,
-    `--preset には ${MARKDOWN_PRESETS.join(", ")} を指定してください。`,
-    {}
-  )
+function parseFont(value: string | undefined): DocumentFont {
+  if (!value) return DEFAULT_DOCUMENT_FONT
+  if ((DOCUMENT_FONTS as readonly string[]).includes(value)) return value as DocumentFont
+  throw new PdfMintError("INVALID_FONT", `font が不正です: ${value}`, `--font には ${DOCUMENT_FONTS.join(", ")} を指定してください。`, {})
 }
 
 function parseFormat(value: string | undefined): ConvertOptions["format"] | undefined {
   if (!value) return undefined
   if (PAPER_FORMATS.has(value)) return value as ConvertOptions["format"]
-  throw invalidOption(
-    `format が不正です: ${value}`,
-    "--format には A4, A3, Letter, Legal のいずれかを指定してください。"
-  )
+  throw invalidOption(`format が不正です: ${value}`, "--format には A4, A3, Letter, Legal のいずれかを指定してください。")
 }
 
 export function buildOptions(args: ParsedArgs): ConvertOptions {
-  const opts: ConvertOptions = {}
-  // precedence: 明示 CLI フラグ > brand token > 既定値。
-  const brand = resolveBrand({ brandPath: args.brand, noBrand: args.noBrand, cwd: process.cwd() })
-  const format = parseFormat(args.format) ?? brand.tokens.paper
-  if (format) opts.format = format
-  // margin は Puppeteer (HTML 入力) と --pm-margin (Markdown の @page / screen padding) の両方へ流す。
-  const margin = validateMargin(args.margin) ?? brand.tokens.margin
-  if (margin) opts.margin = margin
-  const font = parseFontPreset(args.font) ?? brand.tokens.font
-  if (font) opts.font = font
-  if (args.preset) opts.preset = parseMarkdownPreset(args.preset)
-  if (args.css) opts.css = args.css
-  // --pm-margin は brand token だけでなく解決済み margin (フラグ優先) から出す。
-  const brandCss = brandToCss({ ...brand.tokens, margin })
-  if (brandCss) opts.brandCss = brandCss
-  opts.brandSource = brand.source
-  if (args.landscape) opts.landscape = true
-  if (args.noBackground) opts.noBackground = true
-  if (args.expectPages) opts.expectPages = parsePositiveInteger(args.expectPages, "--expect-pages")
+  const options: ConvertOptions = { font: parseFont(args.font) }
+  const format = parseFormat(args.format)
+  if (format) options.format = format
+  const margin = parseMargin(args.margin)
+  if (margin !== undefined) options.margin = margin
+  if (args.css) options.css = args.css
+  if (args.landscape) options.landscape = true
+  if (args.noBackground) options.noBackground = true
+  if (args.expectPages) options.expectPages = parsePositiveInteger(args.expectPages, "--expect-pages")
   if (args.png) {
-    const viewport = parseViewport(args.viewport)
-    opts.png = {
+    options.png = {
       output: args.png,
-      ...viewport,
+      ...parseViewport(args.viewport),
       scale: args.scale ? parsePositiveNumber(args.scale, "--scale") : 3,
     }
   } else if (args.viewport || args.scale) {
-    throw new PdfMintError(
-      "INVALID_VIEWPORT",
-      "--viewport / --scale は --png と一緒に指定してください",
-      "PNG を生成する場合は --png <output.png> を指定してください。",
-      {}
-    )
+    throw new PdfMintError("INVALID_VIEWPORT", "--viewport / --scale は --png と一緒に指定してください", "--png <output.png> を指定してください。", {})
   }
-  return opts
-}
-
-async function runSingleConvert(
-  input: string,
-  output: string,
-  args: ParsedArgs,
-  fmt: OutputFormat
-): Promise<number> {
-  const result = await convertHtmlToPdf(input, output, buildOptions(args))
-  console.log(formatSuccessSingle(result, fmt))
-  return 0
-}
-
-function parseConvertArgs(
-  positional: string[],
-  command: "convert" | "legacy"
-): { input: string; output: string } {
-  const offset = command === "convert" ? 1 : 0
-  const input = positional[offset]
-  const output = positional[offset + 1]
-  const extra = positional.slice(offset + 2)
-
-  if (!input || !output) {
-    throw new Error("SHOW_HELP")
-  }
-  if (extra.length > 0) {
-    throw invalidOption(
-      `単一変換の引数が多すぎます: ${extra.join(" ")}`,
-      command === "convert"
-        ? "単一変換は pdfmint convert <input> <output> の形式で指定してください。"
-        : "単一変換は pdfmint <input> <output> の形式で指定してください。"
-    )
-  }
-  return { input, output }
+  return options
 }
 
 async function main(argv: string[]): Promise<number> {
-  let fmt: OutputFormat = argv.includes("--json") ? "json" : "text"
-
+  let format: OutputFormat = argv.includes("--json") ? "json" : "text"
   try {
     const args = parseArgs(argv)
-    fmt = args.json ? "json" : "text"
-
+    format = args.json ? "json" : "text"
     if (args.showVersion) {
       console.log(getVersion())
       return 0
@@ -327,79 +188,19 @@ async function main(argv: string[]): Promise<number> {
       console.log(HELP)
       return 2
     }
-
-    if (args.positional[0] === "doctor") {
-      if (args.positional.length > 1) {
-        throw invalidOption(
-          `doctor コマンドに余分な引数があります: ${args.positional.slice(1).join(" ")}`,
-          "doctor は pdfmint doctor の形式で指定してください。"
-        )
-      }
-      if (args.png || args.preset || args.css || args.format || args.margin || args.brand) {
-        throw invalidOption(
-          "doctor コマンドでは変換用オプションは利用できません",
-          "pdfmint doctor --json"
-        )
-      }
-      const result = await runDoctor()
-      console.log(formatDoctor(result, fmt))
-      return result.success ? 0 : 1
+    if (args.positional.length !== 2) {
+      throw invalidOption(`入力と出力を1つずつ指定してください: ${args.positional.join(" ")}`, "pdfmint <input> <output> の形式で指定してください。")
     }
-
-    if (args.positional[0] === "batch") {
-      if (args.png || args.viewport || args.scale) {
-        throw new PdfMintError(
-          "INVALID_VIEWPORT",
-          "batch コマンドでは --png / --viewport / --scale はまだ利用できません",
-          "PNG も必要な場合は単一変換を個別に実行してください。",
-          {}
-        )
-      }
-      const [, pattern, outDir] = args.positional
-      if (!pattern || !outDir || args.positional.length !== 3) {
-        if (args.positional.length > 3) {
-          throw invalidOption(
-            `batch コマンドの引数が多すぎます: ${args.positional.slice(3).join(" ")}`,
-            "batch は pdfmint batch <pattern> <out-dir> の形式で指定してください。"
-          )
-        }
-        console.log(HELP)
-        return 2
-      }
-      const { results, errors, browser_reused } = await convertBatch(pattern, outDir, buildOptions(args))
-      console.log(formatSuccessBatch(results, errors, fmt, { browser_reused }))
-      return errors.length > 0 ? 1 : 0
-    }
-
-    if (args.positional[0] === "convert") {
-      try {
-        const { input, output } = parseConvertArgs(args.positional, "convert")
-        return await runSingleConvert(input, output, args, fmt)
-      } catch (err) {
-        if (err instanceof Error && err.message === "SHOW_HELP") {
-          console.log(HELP)
-          return 2
-        }
-        throw err
-      }
-    }
-
-    if (args.positional.length < 2) {
-      console.log(HELP)
-      return 2
-    }
-
-    const { input, output } = parseConvertArgs(args.positional, "legacy")
-    return await runSingleConvert(input, output, args, fmt)
-  } catch (err) {
-    console.log(formatError(err, fmt))
+    const [input, output] = args.positional as [string, string]
+    const result = await convertHtmlToPdf(input, output, buildOptions(args))
+    console.log(formatSuccessSingle(result, format))
+    return 0
+  } catch (error) {
+    console.log(formatError(error, format))
     return 1
   }
 }
 
-// エントリとして実行されたときだけ走らせる (テストから import しても main を起動しない)。
-// bun は import.meta.main を持つ。node バンドル (dist/cli.js) では undefined なので ?? true で常時実行。
 if (import.meta.main ?? true) {
-  const code = await main(process.argv.slice(2))
-  process.exit(code)
+  process.exit(await main(process.argv.slice(2)))
 }

@@ -3,19 +3,19 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { extname, join, resolve } from "node:path"
 import { tmpdir } from "node:os"
 import { PdfMintError } from "./errors"
-import { markdownToHtml, type MarkdownFontPreset } from "./markdown"
-import type { MarkdownPreset } from "./presets/index"
+import { markdownToHtml } from "./markdown"
+import type { DocumentFont } from "./fonts/stacks"
 
 export interface RenderTargetMarkdownOptions {
-  font?: MarkdownFontPreset
-  preset?: MarkdownPreset
+  font?: DocumentFont
   cssPath?: string
-  brandCss?: string
+  margin?: string
 }
 
 export interface RenderTarget {
   inputAbs: string
   renderPath: string
+  kind: "html" | "markdown"
   cleanup: () => void
 }
 
@@ -39,6 +39,7 @@ export function prepareRenderTarget(
     return {
       inputAbs,
       renderPath: inputAbs,
+      kind: "html",
       cleanup: () => {},
     }
   }
@@ -48,9 +49,8 @@ export function prepareRenderTarget(
     const css = markdownOptions.cssPath ? readCustomCss(markdownOptions.cssPath) : undefined
     const html = markdownToHtml(md, {
       font: markdownOptions.font,
-      preset: markdownOptions.preset,
       customCss: css,
-      brandCss: markdownOptions.brandCss,
+      margin: markdownOptions.margin,
     })
     const tmpDir = mkdtempSync(join(tmpdir(), "pdfmint-md-"))
     const renderPath = join(tmpDir, "rendered.html")
@@ -58,6 +58,7 @@ export function prepareRenderTarget(
     return {
       inputAbs,
       renderPath,
+      kind: "markdown",
       cleanup: () => rmSync(tmpDir, { recursive: true, force: true }),
     }
   }

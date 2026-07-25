@@ -8,7 +8,7 @@ pdfmint の出力デモ。1 つのデモにつき **ソース・PDF・ページ�
 | [`report.pdf`](./report.pdf) | 生成された PDF（成果物・主役） |
 | `report-1.png` / `report-2.png` | PDF と同じページ区切りのプレビュー（1 ページ = 1 枚） |
 
-`report.md` は **明朝（`--font serif`）・preset なし** で変換しており、フロントマター・表（数値右揃え）・callout・コードのシンタックスハイライト・脚注に対応している。完全な体裁は [report.pdf](./report.pdf) を参照。
+`report.md` は **Shippori Mincho（`--font shippori`）** で変換しており、フロントマター・表（数値右揃え）・callout・コードのシンタックスハイライト・脚注に対応している。完全な体裁は [report.pdf](./report.pdf) を参照。
 
 ## 再生成
 

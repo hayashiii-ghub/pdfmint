@@ -13,18 +13,12 @@ export type ErrorCode =
   | "INVALID_OPTION"
   | "INVALID_VIEWPORT"
   | "INVALID_FONT"
-  | "INVALID_PRESET"
   | "PAGE_COUNT_MISMATCH"
-  | "BATCH_NO_MATCHES"
-  | "BATCH_OUTPUT_COLLISION"
-  | "BRAND_INVALID"
 
 export interface ErrorContext {
   input?: string
   output?: string
   css?: string
-  brand?: string
-  pattern?: string
   expected_pages?: number
   actual_pages?: number
 }

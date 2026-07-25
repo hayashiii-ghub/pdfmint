@@ -9,16 +9,6 @@ export interface ErrorRecovery {
 const RECOVERY: Partial<Record<ErrorCode, ErrorRecovery>> = {
   BROWSER_LAUNCH_FAILED: {
     next_command: "npx puppeteer browsers install chrome",
-    verify_command: "pdfmint doctor --json",
-  },
-  PAGE_LOAD_FAILED: {
-    verify_command: "pdfmint doctor --json",
-  },
-  OUTPUT_NOT_WRITABLE: {
-    verify_command: "pdfmint doctor --json",
-  },
-  PDF_GENERATION_FAILED: {
-    verify_command: "pdfmint doctor --json",
   },
 }
 

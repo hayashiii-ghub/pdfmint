@@ -4,8 +4,7 @@ import type { BrowserSession } from "./browser-session"
 import { ensureOutputPath } from "./fs-output"
 import { prepareRenderTarget } from "./render-target"
 import { renderArtifacts, type PngArtifact, type RenderTiming } from "./render"
-import type { MarkdownFontPreset } from "./markdown"
-import type { MarkdownPreset } from "./presets/index"
+import { DEFAULT_DOCUMENT_FONT, type DocumentFont } from "./fonts/stacks"
 
 export interface PngOptions {
   output: string
@@ -21,13 +20,8 @@ export interface ConvertOptions {
   noBackground?: boolean
   png?: PngOptions
   expectPages?: number
-  font?: MarkdownFontPreset
-  preset?: MarkdownPreset
+  font?: DocumentFont
   css?: string
-  /** brand profile 由来の :root 変数ブロック (markdown 入力時に prepend)。 */
-  brandCss?: string
-  /** 適用した brand.md の絶対パス。未適用なら null。--json 報告用。 */
-  brandSource?: string | null
 }
 
 export interface ConvertResult {
@@ -37,9 +31,9 @@ export interface ConvertResult {
   size_bytes: number
   duration_ms: number
   page_count?: number
+  font?: DocumentFont
   png?: PngArtifact
   timing?: RenderTiming
-  brand?: { source: string | null; applied: boolean }
 }
 
 export async function convertHtmlToPdf(
@@ -50,11 +44,11 @@ export async function convertHtmlToPdf(
 ): Promise<ConvertResult> {
   const start = Date.now()
   const outputAbs = resolve(outputPath)
+  const font = options.font ?? DEFAULT_DOCUMENT_FONT
   const target = prepareRenderTarget(inputPath, {
-    font: options.font,
-    preset: options.preset,
+    font,
     cssPath: options.css,
-    brandCss: options.brandCss,
+    margin: options.margin,
   })
   const format = options.format ?? "A4"
   const margin = options.margin ?? "0"
@@ -92,14 +86,12 @@ export async function convertHtmlToPdf(
       input: target.inputAbs,
       output: outputAbs,
       format,
+      ...(target.kind === "markdown" ? { font } : {}),
       size_bytes: artifacts.pdf.size_bytes,
       duration_ms: Date.now() - start,
       ...(artifacts.pdf.page_count !== undefined ? { page_count: artifacts.pdf.page_count } : {}),
       ...(artifacts.png ? { png: artifacts.png } : {}),
       timing: artifacts.timing,
-      ...(options.brandSource !== undefined
-        ? { brand: { source: options.brandSource, applied: options.brandSource !== null } }
-        : {}),
     }
   } finally {
     target.cleanup()

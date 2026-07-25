@@ -1,44 +1,75 @@
-/** prepare 層: 日本語フォントスタックと同梱 font の単一定義。
- *
- *  同梱 @font-face の family 名が各スタックの先頭と一致していないと、web font が
- *  システムの同名 font を上書きできず、同梱 font が無言で効かなくなる (= 出力の
- *  再現性が壊れる)。これを構造的に保証するため、スタックは「同梱 family + フォール
- *  バック群」から組み立て、fonts/index.ts も同じ bundled 定義を参照する。フォントを
- *  足す / 変えるときは FONT_SPECS の 1 箇所だけを直せばよい。 */
+/** pdfmintが保証する4つの日本語文書フォント。 */
+export const DOCUMENT_FONTS = ["zen", "shippori", "kiwi", "klee"] as const
+export type DocumentFont = (typeof DOCUMENT_FONTS)[number]
 
-export type MarkdownFontPreset = "sans" | "serif"
+export const DEFAULT_DOCUMENT_FONT: DocumentFont = "zen"
 
-export interface BundledFont {
-  family: string
+export interface FontFace {
   file: string
+  weight: number
 }
 
-interface FontSpec {
-  /** 同梱 variable font。family は組み立て後のスタック先頭と一致する。 */
-  bundled: BundledFont
-  /** 同梱 family の後ろに続くフォールバック群 (システム font + 総称 family)。 */
+export interface FontProfile {
+  family: string
   fallback: string
+  normal: number
+  bold: number
+  extra: number
+  faces: readonly FontFace[]
 }
 
-const FONT_SPECS: Record<MarkdownFontPreset, FontSpec> = {
-  sans: {
-    bundled: { family: "Noto Sans JP", file: "NotoSansJP.ttf" },
-    fallback: `"Noto Sans CJK JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif`,
+export const FONT_PROFILES: Record<DocumentFont, FontProfile> = {
+  zen: {
+    family: "Zen Kaku Gothic New",
+    fallback: '"Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
+    normal: 400,
+    bold: 500,
+    extra: 700,
+    faces: [
+      { file: "ZenKakuGothicNew-Regular.ttf", weight: 400 },
+      { file: "ZenKakuGothicNew-Medium.ttf", weight: 500 },
+      { file: "ZenKakuGothicNew-Bold.ttf", weight: 700 },
+    ],
   },
-  serif: {
-    bundled: { family: "Noto Serif JP", file: "NotoSerifJP.ttf" },
-    fallback: `"Noto Serif CJK JP", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif`,
+  shippori: {
+    family: "Shippori Mincho",
+    fallback: '"Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif',
+    normal: 400,
+    bold: 600,
+    extra: 700,
+    faces: [
+      { file: "ShipporiMincho-Regular.ttf", weight: 400 },
+      { file: "ShipporiMincho-SemiBold.ttf", weight: 600 },
+      { file: "ShipporiMincho-Bold.ttf", weight: 700 },
+    ],
+  },
+  kiwi: {
+    family: "Kiwi Maru",
+    fallback: '"Hiragino Maru Gothic ProN", "Yu Gothic", serif',
+    normal: 400,
+    bold: 500,
+    extra: 500,
+    faces: [
+      { file: "KiwiMaru-Regular.ttf", weight: 400 },
+      { file: "KiwiMaru-Medium.ttf", weight: 500 },
+    ],
+  },
+  klee: {
+    family: "Klee One",
+    fallback: '"Hiragino Mincho ProN", "Yu Mincho", serif',
+    normal: 400,
+    bold: 600,
+    extra: 600,
+    faces: [
+      { file: "KleeOne-Regular.ttf", weight: 400 },
+      { file: "KleeOne-SemiBold.ttf", weight: 600 },
+    ],
   },
 }
 
-/** font-family 文字列。先頭は必ず同梱 family (= @font-face で同梱版に解決される)。 */
-export const FONT_STACKS: Record<MarkdownFontPreset, string> = {
-  sans: `"${FONT_SPECS.sans.bundled.family}", ${FONT_SPECS.sans.fallback}`,
-  serif: `"${FONT_SPECS.serif.bundled.family}", ${FONT_SPECS.serif.fallback}`,
-}
-
-/** @font-face で供給する同梱 variable font 群。family は対応スタックの先頭に一致する。 */
-export const BUNDLED_FONTS: BundledFont[] = [
-  FONT_SPECS.sans.bundled,
-  FONT_SPECS.serif.bundled,
-]
+export const FONT_STACKS: Record<DocumentFont, string> = Object.fromEntries(
+  DOCUMENT_FONTS.map((id) => {
+    const profile = FONT_PROFILES[id]
+    return [id, `"${profile.family}", ${profile.fallback}`]
+  })
+) as Record<DocumentFont, string>
