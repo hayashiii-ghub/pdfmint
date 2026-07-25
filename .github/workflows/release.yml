@@ -61,9 +61,22 @@ jobs:
           fi
           echo "OK: $tag"
 
+      - name: Check whether npm version is already published
+        id: npm-version
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if npm view "$name@$version" version --json >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "$name@$version is already published; skipping npm publish."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # OIDC を自動検出してトークンなしで publish（provenance も付与される）。
       # ゲートは上で実行済みなので prepublishOnly の二重実行は --ignore-scripts で回避。
       - name: Publish to npm (OIDC trusted publishing)
+        if: steps.npm-version.outputs.published != 'true'
         run: npm publish --ignore-scripts
 
       # publish 成功後に GitHub Release を作成（notes は CHANGELOG の該当版から）。

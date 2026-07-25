@@ -7,7 +7,19 @@ import { fileURLToPath } from "node:url"
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const npmCache = mkdtempSync(join(tmpdir(), "pdfmint-npm-cache-"))
 const packTmp = mkdtempSync(join(tmpdir(), "pdfmint-pack-smoke-"))
-const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf-8")) as { version: string }
+const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf-8")) as { name: string; version: string }
+
+type PackResult = {
+  filename: string
+  files: Array<{ path: string }>
+}
+
+function parsePackResult(output: string): PackResult {
+  const parsed = JSON.parse(output) as PackResult[] | Record<string, PackResult>
+  const result = Array.isArray(parsed) ? parsed[0] : parsed[pkg.name] ?? Object.values(parsed)[0]
+  assert(result, "npm pack did not return a package result")
+  return result
+}
 
 function run(command: string, args: string[], cwd = root): string {
   const result = spawnSync(command, args, {
@@ -46,10 +58,8 @@ function assert(condition: unknown, message: string): asserts condition {
 }
 
 try {
-  const dryRun = JSON.parse(run("npm", ["pack", "--dry-run", "--json"])) as Array<{
-    files: Array<{ path: string }>
-  }>
-  const packedPaths = new Set(dryRun[0]?.files.map((file) => file.path) ?? [])
+  const pack = parsePackResult(run("npm", ["pack", "--json", "--pack-destination", packTmp]))
+  const packedPaths = new Set(pack.files.map((file) => file.path))
 
   for (const required of [
     "dist/cli.js",
@@ -83,10 +93,7 @@ try {
     assert(!/^dist\/fonts\/.*\.ts$/.test(path), `npm package should not include font source code: ${path}`)
   }
 
-  const pack = JSON.parse(run("npm", ["pack", "--json", "--pack-destination", packTmp])) as Array<{
-    filename: string
-  }>
-  const tarball = join(packTmp, pack[0]!.filename)
+  const tarball = join(packTmp, pack.filename)
   assert(existsSync(tarball), `packed tarball does not exist: ${tarball}`)
 
   const installDir = join(packTmp, "install")
