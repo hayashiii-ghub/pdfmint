@@ -28,6 +28,12 @@ pdfmint notice.md notice.pdf --font kiwi --png notice.png --json
 pdfmint document.html document.pdf --format A4 --margin 18mm --json
 ```
 
+## 出力例
+
+[リリース判定レポートのMarkdown、PDF、確認用PNG](https://github.com/hayashiii-ghub/pdfmint/tree/main/demo)を公開しています。Shippori Mincho、表、callout、脚注、1ページ検証を使った架空の事例です。
+
+![pdfmintで生成したリリース判定レポート](https://raw.githubusercontent.com/hayashiii-ghub/pdfmint/main/demo/release-brief.png)
+
 ## 日本語フォント
 
 | ID | 書体 | 向いている文書 |

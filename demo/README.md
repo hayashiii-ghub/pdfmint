@@ -1,22 +1,19 @@
-# demo
+# Demo
 
-pdfmint の出力デモ。1 つのデモにつき **ソース・PDF・ページ別プレビュー** を置く。
+AIエージェントが作成したMarkdownを、提出用の1ページPDFへ仕上げる事例です。
 
-| ファイル | 役割 |
-|---|---|
-| [`report.md`](./report.md) | ソース Markdown（入力） |
-| [`report.pdf`](./report.pdf) | 生成された PDF（成果物・主役） |
-| `report-1.png` / `report-2.png` | PDF と同じページ区切りのプレビュー（1 ページ = 1 枚） |
-
-`report.md` は **Shippori Mincho（`--font shippori`）** で変換しており、フロントマター・表（数値右揃え）・callout・コードのシンタックスハイライト・脚注に対応している。完全な体裁は [report.pdf](./report.pdf) を参照。
-
-## 再生成
-
-PDF を作り、ページごとに PNG 化する（PNG を 1 枚に詰め込まず PDF と同じ区切りにする）:
+- [`release-brief.md`](./release-brief.md): 入力原稿
+- [`release-brief.pdf`](./release-brief.pdf): Shippori Minchoで生成したPDF
+- [`release-brief.png`](./release-brief.png): エージェントが確認するPNG
 
 ```bash
-bun run build          # dist/cli.js を更新
-bun run render:demo    # report.pdf と report-<n>.png を再生成
+bun run build
+node dist/cli.js demo/release-brief.md demo/release-brief.pdf \
+  --font shippori \
+  --margin 14mm \
+  --png demo/release-brief.png \
+  --expect-pages 1 \
+  --json
 ```
 
-> プレビュー PNG は PDF を 1 ページ 1 枚にラスタライズしたもの。`demo/` は npm パッケージには含めず、GitHub 上のデモ用。
+事例は架空で、実在の案件や計測値を含みません。PDFとPNGはpdfmint自身で生成し、追加の変換ツールは使用していません。
