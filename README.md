@@ -1,6 +1,48 @@
+> 🇬🇧 [English](./README.en.md)
+
 # @hayashiii/pdfmint
 
-AIが作ったHTMLまたはMarkdownを、目的に合う日本語書体で提出用PDFへ仕上げるCLIです。確認用PNGも同じ入力から生成できます。
+[![npm version](https://img.shields.io/npm/v/@hayashiii/pdfmint.svg)](https://www.npmjs.com/package/@hayashiii/pdfmint)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+pdfmintは、AIが作ったHTMLまたはMarkdownを、目的に合う日本語書体で提出用PDFへ仕上げるCLIです。確認用PNGも同じ入力から生成できます。
+
+```text
+HTML / Markdown
+       ↓
+    pdfmint
+       ↓
+PDF + 確認用PNG + JSON結果
+```
+
+## まず使う
+
+Node.js 22以上が必要です。
+
+```bash
+npm install -g @hayashiii/pdfmint
+pdfmint report.md report.pdf --json
+```
+
+目的に応じて書体や確認用PNGを追加します。
+
+```bash
+pdfmint proposal.md proposal.pdf --font shippori --json
+pdfmint notice.md notice.pdf --font kiwi --png notice.png --json
+pdfmint document.html document.pdf --format A4 --margin 18mm --json
+```
+
+Puppeteerが使用するChromeを取得できない場合は、エラーJSONの `next_command` を実行してください。
+
+## シリーズ内の役割
+
+| やりたいこと | 使うツール |
+|---|---|
+| 公開サイトをスクリーンショットアーカイブとして収集する | [`sitesnap`](https://github.com/hayashiii-ghub/sitesnap) |
+| 開発中UIの状態、レスポンシブ、品質を検証する | [`shimon`](https://github.com/hayashiii-ghub/shimon) |
+| HTMLやMarkdownを提出用PDFへ仕上げる | `pdfmint` |
+
+pdfmintは文書を作成するエージェントではなく、完成した1つの原稿をPDF成果物へ変換するツールです。
 
 ## 特徴
 
@@ -10,23 +52,6 @@ AIが作ったHTMLまたはMarkdownを、目的に合う日本語書体で提出
 - PDFと確認用PNGを同時生成
 - ページ数検証と構造化エラー
 - `--json` でAIエージェントから扱いやすい出力
-
-## インストール
-
-```bash
-npm install -g @hayashiii/pdfmint
-```
-
-Node.js 22以上が必要です。Puppeteerが使用するChromeを取得できない場合は、エラーJSONの `next_command` を実行してください。
-
-## 使い方
-
-```bash
-pdfmint report.md report.pdf --json
-pdfmint proposal.md proposal.pdf --font shippori --json
-pdfmint notice.md notice.pdf --font kiwi --png notice.png --json
-pdfmint document.html document.pdf --format A4 --margin 18mm --json
-```
 
 ## 出力例
 
@@ -118,6 +143,17 @@ GFMに加えて、以下をそのまま扱えます。
 - 1ページ物は `--expect-pages 1` で意図しない改ページを検出できます。
 - フォントはSIL Open Font License 1.1です。各ライセンスを `dist/fonts/` に同梱します。
 
+## 0.xからの移行
+
+```text
+pdfmint convert input.md output.pdf  → pdfmint input.md output.pdf
+--font sans                          → --font zen
+--font serif                         → --font shippori
+--preset / --brand                   → --css + --font / --format / --margin
+```
+
+`batch`と`doctor`は1.0で削除しました。1回の実行では1つの原稿を変換し、起動エラーは構造化エラーの`next_command`から復旧します。
+
 ## 開発
 
 ```bash
@@ -127,6 +163,8 @@ bun test
 bun run build
 bun run pack:smoke
 ```
+
+package versionと一致する`v1.0.0`形式のtagをpushすると、検証後にnpmとGitHub Releaseへ公開します。
 
 ## License
 
